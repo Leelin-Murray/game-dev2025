@@ -22,3 +22,131 @@ This is<i style="border-style:groove;">italic with a border</i>
 <br>
 
 I like<i style="border-style:ridge; background-color:blue; color:red;">awesome!</i>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cool CSS Features Demo</title>
+  <style>
+    /* Global Styles */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #00c6ff, #0072ff);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      font-size: 3em;
+      margin-bottom: 20px;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      margin-top: 30px;
+    }
+
+    .card {
+      background: white;
+      color: #333;
+      padding: 20px;
+      border-radius: 15px;
+      width: 200px;
+      text-align: center;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-10px) scale(1.05);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn {
+      margin-top: 40px;
+      padding: 12px 24px;
+      background: transparent;
+      border: 2px solid white;
+      border-radius: 30px;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .btn:hover {
+      background: white;
+      color: #0072ff;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 2em;
+      }
+
+      .card {
+        width: 100%;
+        max-width: 300px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Cool CSS Features 🎨</h1>
+
+  <div class="container">
+    <div class="card">
+      <h3>Gradients</h3>
+      <p>Smooth background color transitions using `linear-gradient`.</p>
+    </div>
+
+    <div class="card">
+      <h3>Hover Effects</h3>
+      <p>Cards lift and scale when you hover.</p>
+    </div>
+
+    <div class="card">
+      <h3>Flexbox</h3>
+      <p>Responsive layout with flexible box model.</p>
+    </div>
+
+    <div class="card">
+      <h3>Transitions</h3>
+      <p>Animations on hover for smooth UI interactions.</p>
+    </div>
+
+    <div class="card">
+      <h3>Shadows</h3>
+      <p>Subtle depth using `box-shadow`.</p>
+    </div>
+  </div>
+
+  <button class="btn">Try Hovering the Cards!</button>
+
+</body>
+</html>
