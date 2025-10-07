@@ -46,3 +46,70 @@
 
 
   <div id="myDiv01>...</div>
+
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Single Image Border</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font import */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            min-height: 100vh; /* Ensure full height for centering */
+            display: flex;
+            flex-direction: column;
+        }
+        /* Custom shadow for the hover effect */
+        .hover\:shadow-3xl:hover {
+            box-shadow: 0 20px 25px -5px rgba(244, 114, 182, 0.5), 0 10px 10px -5px rgba(244, 114, 182, 0.4);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto flex-grow flex flex-col justify-center items-center">
+        <!-- Header -->
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-gray-900 mb-2">Single Image Frame</h1>
+            <p class="text-lg text-gray-600">A stylized border for easy integration.</p>
+        </header>
+
+        <!-- Single Image Container: COPY THIS BLOCK -->
+        <div class="w-full max-w-sm mx-auto">
+            <!-- Image Container with Border and Shadow -->
+            <div class="
+                p-3
+                border-8 border-indigo-600
+                rounded-[3rem] /* Large rounded corners */
+                shadow-2xl
+                transition duration-500 ease-in-out
+                hover:shadow-3xl hover:border-pink-500
+                bg-white
+                h-72 w-full
+            ">
+                <img 
+                    src="https://i.pinimg.com/736x/85/e3/7a/85e37af6213720a8d91a7d416d85da8d.jpg" 
+                    alt="Placeholder Image" 
+                    class="w-full h-full object-cover rounded-[2.5rem] transition duration-500 hover:scale-[1.01]"
+                    onerror="this.onerror=null;this.src='https://placehold.co/500x500/94a3b8/ffffff?text=Error';"
+                >
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- Instructions for integration -->
+    <footer class="mt-10 text-center text-sm text-gray-500 p-4">
+        <p>To integrate this border, copy the **&lt;div class="w-full max-w-sm mx-auto"&gt;...&lt;/div&gt;** block directly above.</p>
+        <p>Remember to include the Tailwind CSS script in your HTML's &lt;head&gt; section for the styles to work.</p>
+    </footer>
+
+</body>
+</html>
+
