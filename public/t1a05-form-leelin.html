@@ -1,4 +1,5 @@
 
+
 <h1 align=center>t1a05-forms-leelin.html</h1>
 
 
@@ -42,162 +43,143 @@ Checkboxes:<br>
 
 </form>
 
-/* --- Global Styles & Layout --- */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T1A05 Forms - Leelin</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for better readability and a clean font */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc;
+        }
+        /* Style for the textarea to ensure it looks modern */
+        textarea {
+            resize: vertical;
+            min-height: 8rem;
+        }
+    </style>
+    <!-- Configure Tailwind for custom colors (optional, but nice) -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#1e40af',
+                        'primary-hover': '#1d4ed8',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="p-4 md:p-8 flex flex-col items-center min-h-screen">
 
-/* Import a clean, modern font */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+    <h1 class="text-3xl font-extrabold text-gray-800 mb-6 text-center">T1A05 Forms - Leelin</h1>
 
-body {
-    font-family: 'Inter', sans-serif;
-    background-color: #f3f4f6; /* Light gray background */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 1rem;
-    margin: 0;
-}
+    <!-- External Link -->
+    <a href="https://copilot.microsoft.com" 
+       class="mb-8 text-lg text-primary-blue hover:text-primary-hover font-semibold transition duration-150 underline">
+        Visit Copilot
+    </a>
 
-/* --- Form Container (The Card) --- */
-.form-container, form { /* Target the form element itself for the card styling */
-    width: 100%;
-    max-width: 500px; /* Max width for a clean look on desktop */
-    background-color: #ffffff;
-    padding: 2.5rem; /* Large padding */
-    border-radius: 1rem; /* Rounded corners */
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); /* Soft, prominent shadow */
-    transition: all 0.3s ease-in-out;
-}
+    <!-- Form Container (Card) -->
+    <div class="w-full max-w-lg bg-white p-6 sm:p-8 rounded-xl shadow-2xl border border-gray-100">
 
-/* --- Input & Element Styles (Targeting generic elements) --- */
+        <form action="#" method="POST" class="space-y-6">
 
-/* Hide the raw <br> tags to rely on cleaner CSS spacing */
-form > br {
-    display: none;
-}
+            <!-- Text and Password Inputs -->
+            <div class="space-y-4">
+                <label for="name" class="block text-sm font-medium text-gray-700">Name:</label>
+                <input type="text" id="name" value="Leelin" 
+                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary-blue focus:border-primary-blue">
+                
+                <label for="password" class="block text-sm font-medium text-gray-700">Password:</label>
+                <input type="password" id="password" value="never" 
+                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary-blue focus:border-primary-blue">
+            </div>
 
-/* General styling for text-based inputs, textarea, and select boxes */
-input[type="text"],
-input[type="password"],
-input[type="number"],
-textarea,
-select {
-    width: 100%;
-    display: block; /* Force elements to take up full width for proper stacking */
-    padding: 0.75rem 1rem; /* 12px vertical, 16px horizontal */
-    border: 1px solid #d1d5db; /* Light gray border */
-    border-radius: 0.6rem; /* Slightly rounded corners for inputs */
-    color: #1f2937;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    /* Add space below to separate groups and labels */
-    margin-top: 0.25rem;
-    margin-bottom: 1.5rem;
-    box-sizing: border-box; /* Include padding and border in the element's total width */
-}
+            <!-- Number Input -->
+            <div>
+                <label for="number" class="block text-sm font-medium text-gray-700">Number:</label>
+                <input type="number" id="number" value="1738" 
+                       class="mt-1 block w-full max-w-xs px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary-blue focus:border-primary-blue">
+            </div>
 
-/* Ensure textarea doesn't overflow */
-textarea {
-    resize: vertical;
-}
+            <!-- Button as an Input -->
+            <div>
+                <input type="button" value="Click Me (Alert)" 
+                       onclick="alert('Whats up big dawg!')" 
+                       class="cursor-pointer inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150">
+            </div>
 
-/* Focus State (The Magic) */
-input[type="text"]:focus,
-input[type="password"]:focus,
-input[type="number"]:focus,
-textarea:focus,
-select:focus {
-    outline: none;
-    border-color: #4f46e5; /* Primary Indigo color */
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.3); /* Subtle blue glow */
-}
+            <!-- Radio Buttons -->
+            <div>
+                <p class="block text-sm font-medium text-gray-700 mb-2">Radio Buttons:</p>
+                <div class="flex items-center space-x-6">
+                    <div class="flex items-center">
+                        <input id="radio-red" type="radio" name="myRad" value="red" 
+                               class="focus:ring-primary-blue h-4 w-4 text-primary-blue border-gray-300">
+                        <label for="radio-red" class="ml-2 block text-sm text-gray-900">Red</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input id="radio-blue" type="radio" name="myRad" value="blue" 
+                               class="focus:ring-primary-blue h-4 w-4 text-primary-blue border-gray-300">
+                        <label for="radio-blue" class="ml-2 block text-sm text-gray-900">Blue</label>
+                    </div>
+                </div>
+            </div>
 
-/* Styling for placeholder text */
-input::placeholder, textarea::placeholder {
-    color: #9ca3af;
-}
+            <!-- Checkboxes -->
+            <div>
+                <p class="block text-sm font-medium text-gray-700 mb-2">Checkboxes:</p>
+                <div class="flex items-center space-x-6">
+                    <div class="flex items-center">
+                        <input id="checkbox-reading" type="checkbox" value="reading" 
+                               class="focus:ring-primary-blue h-4 w-4 text-primary-blue rounded border-gray-300">
+                        <label for="checkbox-reading" class="ml-2 block text-sm text-gray-900">Reading</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input id="checkbox-sports" type="checkbox" value="sports" 
+                               class="focus:ring-primary-blue h-4 w-4 text-primary-blue rounded border-gray-300">
+                        <label for="checkbox-sports" class="ml-2 block text-sm text-gray-900">Sports</label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Textarea -->
+            <div>
+                <label for="comment" class="block text-sm font-medium text-gray-700">Comment:</label>
+                <textarea id="comment" rows="4" 
+                          class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-primary-blue focus:border-primary-blue">
+                    Mss football is cooking this szn! 2-0 Reg szn Rn
+                </textarea>
+            </div>
 
-/* --- Radio Button and Checkbox Styles --- */
-/* Reset their margins and remove block style, add group spacing */
-input[type="radio"],
-input[type="checkbox"] {
-    width: auto;
-    display: inline-block;
-    margin-right: 0.5rem;
-    /* Reset block styling and margins from above group */
-    padding: 0;
-    border: none;
-    box-shadow: none;
-    margin-top: 0;
-    margin-bottom: 0.5rem;
-    vertical-align: middle;
-}
+            <!-- Select Box -->
+            <div>
+                <label for="school-select" class="block text-sm font-medium text-gray-700">Select Box:</label>
+                <select id="school-select" 
+                        class="mt-1 block w-full max-w-xs pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-blue focus:border-primary-blue sm:text-sm rounded-lg shadow-sm">
+                    <option value="Mission Senior Secondary">MSS</option>
+                    <option value="Earl Marriot">EMS</option>
+                </select>
+            </div>
 
-/* Style for the custom button input */
-input[type="button"] {
-    width: 100%;
-    margin-bottom: 1.5rem;
-    display: block;
-    /* The rest of the styling is inherited from the action button block below */
-}
+            <!-- Submit and Reset Buttons -->
+            <div class="pt-4 flex justify-end space-x-4">
+                <input type="reset" value="Reset" 
+                       class="cursor-pointer inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150">
+                
+                <input type="submit" value="Submit" 
+                       class="cursor-pointer inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-primary-blue hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-blue transition duration-150">
+            </div>
 
-/* --- Submit/Reset Button Styles (Targeting specific types) --- */
-
-/* Style for the main action buttons */
-input[type="submit"],
-input[type="reset"],
-input[type="button"] { /* Applying primary button look to all action inputs */
-    padding: 0.75rem 1rem;
-    font-size: 1.125rem; /* 18px */
-    font-weight: 600;
-    color: #ffffff;
-    background-color: #4f46e5; /* Primary Indigo color */
-    border: none;
-    border-radius: 0.6rem;
-    cursor: pointer;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06); /* Soft shadow */
-    transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
-    margin-top: 1rem;
-}
-
-/* Make submit/reset appear side-by-side */
-form > input[type="submit"], form > input[type="reset"] {
-    width: calc(50% - 0.5rem); /* Half width minus margin */
-    margin-right: 1rem; /* Space between them */
-    display: inline-block;
-    margin-top: 0; /* Align them with each other */
-}
-form > input[type="reset"] {
-    margin-right: 0;
-}
-
-/* Hover/Active states */
-input[type="submit"]:hover,
-input[type="reset"]:hover,
-input[type="button"]:hover {
-    background-color: #4338ca; /* Darker indigo on hover */
-    transform: translateY(-2px); /* Slight lift effect */
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-}
-
-input[type="submit"]:active,
-input[type="reset"]:active,
-input[type="button"]:active {
-    background-color: #3730a3; /* Even darker on press */
-    transform: translateY(0);
-}
-
-
-/* --- Responsive Adjustments --- */
-@media (max-width: 640px) {
-    .form-container, form {
-        padding: 1.5rem;
-        margin: 0.5rem;
-    }
-    /* Stack submit/reset buttons on small screens */
-    form > input[type="submit"], form > input[type="reset"] {
-        width: 100%;
-        margin-right: 0;
-        margin-bottom: 1rem;
-        display: block;
-    }
-}
+        </form>
+    </div>
+</body>
+</html>
