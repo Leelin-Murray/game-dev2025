@@ -1,25 +1,6 @@
 <h2 align=center>t1a10-for-loops-leelin.html</h2>
 
 
-<input id="myNum01" type=number value="4" ><br>
-
-<input type=button value="myEvent squares" onclick="{
-  let myTemp = ''
-  document.hetElementById('myDiv01').innerHTML
-  for (x=0;  x<10;  x++){
-     if (x == 3){
-        myTemp += x + ' third <br>'
-     } else {
-        myTemp += x +  '<br>'
-     }
-  }
-  document.getElementById('myDiv01').innerHTML = myTemp
-}"><br>
-
-
-
-<div id=myDiv01">...</div>
-
 
 <!DOCTYPE html>
 <html>
@@ -47,6 +28,94 @@
   "><br>
 
   <div id="myDiv01">...</div>
+
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>For Loops Fun - Leelin</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f4f8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    h2 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    input[type="number"] {
+      padding: 8px;
+      font-size: 16px;
+      width: 100px;
+      margin-bottom: 10px;
+    }
+
+    input[type="button"] {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    input[type="button"]:hover {
+      background-color: #2980b9;
+    }
+
+    #myDiv01 {
+      margin-top: 20px;
+      padding: 15px;
+      width: 300px;
+      background-color: white;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      text-align: left;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+
+  <h2>t1a10-for-loops-leelin.html</h2>
+
+  <input id="myNum01" type="number" value="4" min="1" max="100"><br>
+
+  <input type="button" value="Show Loop Output" onclick="showLoopOutput()"><br>
+
+  <div id="myDiv01">...</div>
+
+  <script>
+    function showLoopOutput() {
+      let loopLimit = parseInt(document.getElementById('myNum01').value);
+      let myTemp = '';
+
+      for (let x = 0; x < loopLimit; x++) {
+        if (x === 3) {
+          myTemp += `${x} is the third one!<br>`;
+        } else if (x % 2 === 0) {
+          myTemp += `${x} is even<br>`;
+        } else {
+          myTemp += `${x} is odd<br>`;
+        }
+      }
+
+      document.getElementById('myDiv01').innerHTML = myTemp;
+    }
+  </script>
 
 </body>
 </html>
