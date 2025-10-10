@@ -1,21 +1,112 @@
-<h2 align=center>t1a08-in-out-leelin.html</h2>
- 
-  <a href="https://www.w3schools.com/jsref/prop_html_innerhtml.asp">t1a08 work in progress</a>
-<br><br>
-<input type=button value="How do you make a tissue dance?" onclick="('Put a little boogie into it!')"  <br><br>
- 
-  <h4> Example input output code</h4>
-<pre><
-    let myIn01 = parseFloat(document.getElementById('myNum01').value
-    document.getElementById('myDiv01').innerHTML = myIn01 + ' squared = ' + myIn01*myIn01
-</pre>
-  <h4> Example working code</h4>
- 
-  <input id="myNum01" type=number value="4" ><br>
- 
- <input type=button value="myEvent squares" click="{
-        let myIn01 = parseFloat (document.getElementById ('myNum01').value)
-        let myAnswer = myIn01 * myIn01
-        document.getElementById ('myDiv01'). innerHTML = myIn01 + ' squared = ' + myAnswer
-  }"><br>
-  <div id="myDiv01">...</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>t1a08-in-out-leelin.html</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f4f8; /* Light background */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            max-width: 450px;
+            width: 90%;
+            margin-top: 50px;
+        }
+        h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        h4 {
+            color: #34495e;
+            margin-top: 25px;
+        }
+        input[type="number"] {
+            width: calc(100% - 20px);
+            padding: 12px 10px;
+            margin-bottom: 15px;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input[type="number"]:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        input[type="button"] {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s, transform 0.1s;
+            width: 100%;
+        }
+        input[type="button"]:hover {
+            background-color: #2980b9;
+        }
+        input[type="button"]:active {
+            transform: scale(0.98);
+        }
+        #myDiv01 {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #ecf0f1; /* Light gray for output */
+            border: 1px dashed #95a5a6;
+            border-radius: 8px;
+            min-height: 40px;
+            font-size: 1.1em;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2 align="center">t1a08-in-out-leelin.html</h2>
+
+        <br><br>
+
+        <h4>Example working code</h4>
+        
+        <!-- Input Field -->
+        <input id="myNum01" type="number" value="4"><br>
+
+        <!-- Action Button - Corrected the 'click' attribute to 'onclick' for functionality -->
+        <input 
+            type="button" 
+            value="myEvent squares" 
+            onclick="
+                // 1. Get the input value and convert it to a floating-point number
+                let myIn01 = parseFloat (document.getElementById ('myNum01').value);
+                
+                // 2. Calculate the square
+                let myAnswer = myIn01 * myIn01;
+                
+                // 3. Display the result in the output div (myDiv01)
+                document.getElementById ('myDiv01').innerHTML = myIn01 + ' squared = ' + myAnswer;
+            "
+        ><br>
+
+        <!-- Output Division -->
+        <div id="myDiv01">...</div>
+    </div>
+
+</body>
+</html>
