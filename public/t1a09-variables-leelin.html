@@ -35,6 +35,29 @@
             // Display the result
             myOut.innerHTML = resultString;
         }
+
+        /**
+         * Converts inputs to numbers and performs arithmetic addition.
+         * Shows how JavaScript handles the '+' operator differently for strings vs numbers.
+         */
+        function handleAddNumbers() {
+            // Get string values from inputs
+            let num1Str = document.getElementById('myNum01').value;
+            var num2Str = document.getElementById('myNum02').value;
+            
+            // Convert to numbers for guaranteed arithmetic addition
+            // parseFloat is used to allow for decimal numbers, falling back to 0 if input is not a valid number
+            const num1 = parseFloat(num1Str) || 0;
+            const num2 = parseFloat(num2Str) || 0;
+            
+            const myOut = document.getElementById('mySpan01');
+            
+            // Perform numerical addition
+            const result = num1 + num2;
+
+            // Display the result, fixed to two decimal places for a standard calculator look
+            myOut.innerHTML = result.toFixed(2);
+        }
     </script>
 </head>
 <body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
@@ -43,10 +66,10 @@
     <div class="bg-white p-6 sm:p-10 rounded-xl shadow-2xl max-w-lg w-full transform transition duration-500 hover:shadow-3xl">
         
         <h1 class="text-3xl font-extrabold text-indigo-700 mb-6 text-center tracking-tight">
-            Variable Concatenation Demo
+            String Concatenation & Calculator Demo
         </h1>
         <p class="text-gray-500 mb-8 text-center">
-            Enter two words below to see string concatenation in action.
+            Enter text or numbers below and choose an operation.
         </p>
 
         <!-- Input Fields -->
@@ -58,7 +81,7 @@
                     id="myNum01" 
                     type="text" 
                     value="Fred"
-                    placeholder="Enter first string (let)"
+                    placeholder="Enter first string or number"
                     class="flex-1 p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-indigo-200 focus:border-indigo-400 w-full transition duration-150"
                 >
                 
@@ -71,29 +94,33 @@
                     id="myNum02" 
                     type="text" 
                     value="Mary"
-                    placeholder="Enter second string (var)"
+                    placeholder="Enter second string or number"
                     class="flex-1 p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-indigo-200 focus:border-indigo-400 w-full transition duration-150"
                 >
             </div>
         </div>
 
-        <!-- Action Button -->
-        <button 
-            onclick="handleConcatenation()"
-            class="mt-8 w-full bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 transition duration-150 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
-        >
-            Add (Concatenate) Strings
-        </button>
-
-        <!-- Output Display Area (Reference held by 'const') -->
-                </span>
-            </div>
+        <!-- Action Buttons Group -->
+        <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Button for String Concatenation -->
+            <button 
+                onclick="handleConcatenation()"
+                class="w-full bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 transition duration-150 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+            >
+                String Concatenation (Text)
+            </button>
+            
+            <!-- Button for Arithmetic Addition (Calculator) -->
+            <button 
+                onclick="handleAddNumbers()"
+                class="w-full bg-teal-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:bg-teal-700 focus:outline-none focus:ring-4 focus:ring-teal-300 transition duration-150 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+            >
+                Addition (Number)
+            </button>
         </div>
 
-    </div>
-
-</body>
-</html>      <div class="mt-8 pt-6 border-t border-gray-200">
+        <!-- Output Display Area (Reference held by 'const') -->
+        <div class="mt-8 pt-6 border-t border-gray-200">
             <h3 class="text-lg font-semibold text-gray-700 mb-3">
                 Result:
             </h3>
@@ -103,3 +130,11 @@
                     class="text-xl font-mono text-indigo-800 break-words"
                 >
                     ...Output will appear here (const)
+                </span>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
