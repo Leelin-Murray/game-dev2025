@@ -4,52 +4,74 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>t1a12-events-leelin.html</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { text-align: center; }
+    .output { margin-top: 10px; font-weight: bold; color: blue; }
+    img { border: 3px solid transparent; }
+  </style>
 </head>
 <body>
-  <h1 align="center">t1a12-events-leelin.html</h1>
-  <p>Examples of HTML events (no alerts, just visual changes or console messages).</p>
+  <h1>t1a12-events-leelin.html</h1>
+  <p>Examples of HTML events (no alerts — only visual and text feedback).</p>
 
   <!-- 1. onclick event -->
-  <button onclick="console.log('Button clicked!'); this.style.backgroundColor='lightblue'">
+  <button onclick="this.style.backgroundColor='lightblue'; document.getElementById('msg1').textContent='Button clicked!'">
     Click Me
-  </button><br><br>
+  </button>
+  <div id="msg1" class="output"></div>
+  <br>
 
   <!-- 2. onmouseover / onmouseout -->
   <input type="button" value="Mouse Over Me"
          onmouseover="this.style.backgroundColor='green'"
-         onmouseout="this.style.backgroundColor=''" /><br><br>
+         onmouseout="this.style.backgroundColor=''; document.getElementById('msg2').textContent='Mouse moved off button';" />
+  <div id="msg2" class="output"></div>
+  <br>
 
   <!-- 3. ondblclick event -->
-  <p ondblclick="this.style.color='red'; console.log('Paragraph double-clicked!')">
+  <p ondblclick="this.style.color='red'; document.getElementById('msg3').textContent='Paragraph double-clicked!'">
     Double-click this text to make it red.
   </p>
+  <div id="msg3" class="output"></div>
+  <br>
 
   <!-- 4. onfocus / onblur -->
   <input type="text" placeholder="Focus on me!"
-         onfocus="this.style.backgroundColor='yellow'"
-         onblur="this.style.backgroundColor='white'"><br><br>
+         onfocus="this.style.backgroundColor='yellow'; document.getElementById('msg4').textContent='Input focused';"
+         onblur="this.style.backgroundColor='white'; document.getElementById('msg4').textContent='Input lost focus';">
+  <div id="msg4" class="output"></div>
+  <br>
 
   <!-- 5. onchange event -->
-  <select onchange="console.log('Selected: ' + this.value)">
+  <select onchange="document.getElementById('msg5').textContent='You selected: ' + this.value;">
     <option value="">--Choose an option--</option>
     <option value="Apples">Apples</option>
     <option value="Bananas">Bananas</option>
     <option value="Cherries">Cherries</option>
-  </select><br><br>
+  </select>
+  <div id="msg5" class="output"></div>
+  <br>
 
   <!-- 6. onkeydown event -->
   <input type="text" placeholder="Type something"
-         onkeydown="console.log('Key pressed: ' + event.key)"><br><br>
+         onkeydown="document.getElementById('msg6').textContent='Key pressed: ' + event.key;">
+  <div id="msg6" class="output"></div>
+  <br>
 
-  <!-- 7. onload event (for image) -->
+  <!-- 7. onload event -->
   <img src="https://placekitten.com/150/150"
-       onload="console.log('Kitten image loaded!')" alt="Kitten"><br><br>
+       onload="this.style.border='3px solid orange'; document.getElementById('msg7').textContent='Kitten image loaded successfully!';"
+       alt="Kitten">
+  <div id="msg7" class="output"></div>
+  <br>
 
   <!-- 8. onsubmit event -->
-  <form onsubmit="console.log('Form submitted'); return false;">
-    <input type="text" placeholder="Enter name">
+  <form onsubmit="document.getElementById('msg8').textContent='Form submitted with name: ' + this.name.value; return false;">
+    <input type="text" name="name" placeholder="Enter name">
     <input type="submit" value="Submit">
   </form>
+  <div id="msg8" class="output"></div>
 
 </body>
 </html>
