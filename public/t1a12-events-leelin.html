@@ -1,8 +1,51 @@
-<h1 align=center>t1a12-events-leelin.html</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>t1a12-events-leelin.html</title>
+</head>
+<body>
+  <h1 align="center">t1a12-events-leelin.html</h1>
+  <p>Below are examples of different HTML events.</p>
 
-...
+  <!-- 1. onclick event -->
+  <button onclick="console.log('Holy moly!'); alert('Button clicked!')">Click Me</button><br><br>
 
+  <!-- 2. onmouseover and onmouseout -->
+  <input type="button" value="Mouse Over Me"
+         onmouseover="this.style.backgroundColor='green'"
+         onmouseout="this.style.backgroundColor=''" /><br><br>
 
-<button onclick='{console.log('holy moly')}">ctrl-shift-i for console</button><br><br>
+  <!-- 3. ondblclick event -->
+  <p ondblclick="this.style.color='red'">Double-click this text to make it red.</p>
 
-<input type=button value="mouseOver" onMouswOver="{this.style.backgroundColor='green'}> <br>
+  <!-- 4. onfocus and onblur -->
+  <input type="text" placeholder="Focus on me!"
+         onfocus="this.style.backgroundColor='yellow'"
+         onblur="this.style.backgroundColor='white'"><br><br>
+
+  <!-- 5. onchange event -->
+  <select onchange="alert('You selected: ' + this.value)">
+    <option value="">--Choose an option--</option>
+    <option value="Apples">Apples</option>
+    <option value="Bananas">Bananas</option>
+    <option value="Cherries">Cherries</option>
+  </select><br><br>
+
+  <!-- 6. onkeydown event -->
+  <input type="text" placeholder="Type something"
+         onkeydown="console.log('Key pressed: ' + event.key)"><br><br>
+
+  <!-- 7. onload event (runs when image finishes loading) -->
+  <img src="https://placekitten.com/150/150"
+       onload="alert('Kitten image loaded!')" alt="Kitten"><br><br>
+
+  <!-- 8. onsubmit event -->
+  <form onsubmit="alert('Form submitted!'); return false;">
+    <input type="text" placeholder="Enter name">
+    <input type="submit" value="Submit">
+  </form>
+
+</body>
+</html>
