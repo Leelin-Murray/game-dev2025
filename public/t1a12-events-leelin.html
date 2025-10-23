@@ -59,9 +59,10 @@
   <div id="msg6" class="output"></div>
   <br>
 
-  <!-- 7. onload event -->
+  <!-- 7. onclick event for alarm image (smaller image + event) -->
   <img src="https://www.epssecurity.com/wp-content/uploads/2019/09/Pull-Station3_hi.jpg"
-       onload="this.style.border='3px solid orange'; document.getElementById('msg7').textContent='alarm loaded successfully';"
+       width="150" height="150"
+       onclick="this.style.border='3px solid red'; document.getElementById('msg7').textContent='Alarm clicked!';"
        alt="Alarm">
   <div id="msg7" class="output"></div>
   <br>
