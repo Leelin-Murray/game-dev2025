@@ -13,39 +13,39 @@
 </head>
 <body>
   <h1>t1a12-events-leelin.html</h1>
-  <p>Examples of HTML events (no alerts — only visual and text feedback).</p>
+  <p>HTML events</p>
 
   <!-- 1. onclick event -->
-  <button onclick="this.style.backgroundColor='lightblue'; document.getElementById('msg1').textContent='Button clicked!'">
-    Click Me
+  <button onclick="this.style.backgroundColor='lightblue'; document.getElementById('msg1').textContent='clicked'">
+    Click
   </button>
   <div id="msg1" class="output"></div>
   <br>
 
   <!-- 2. onmouseover / onmouseout -->
-  <input type="button" value="Mouse Over Me"
+  <input type="button" value="Mouse Over"
          onmouseover="this.style.backgroundColor='green'"
-         onmouseout="this.style.backgroundColor=''; document.getElementById('msg2').textContent='Mouse moved off button';" />
+         onmouseout="this.style.backgroundColor=''; document.getElementById('msg2').textContent='';" />
   <div id="msg2" class="output"></div>
   <br>
 
   <!-- 3. ondblclick event -->
-  <p ondblclick="this.style.color='red'; document.getElementById('msg3').textContent='Paragraph double-clicked!'">
-    Double-click this text to make it red.
+  <p ondblclick="this.style.color='red'; document.getElementById('msg3').textContent=''">
+    Double-click to turn red.
   </p>
   <div id="msg3" class="output"></div>
   <br>
 
   <!-- 4. onfocus / onblur -->
-  <input type="text" placeholder="Focus on me!"
+  <input type="text" placeholder="Focus"
          onfocus="this.style.backgroundColor='yellow'; document.getElementById('msg4').textContent='Input focused';"
          onblur="this.style.backgroundColor='white'; document.getElementById('msg4').textContent='Input lost focus';">
   <div id="msg4" class="output"></div>
   <br>
 
   <!-- 5. onchange event -->
-  <select onchange="document.getElementById('msg5').textContent='You selected: ' + this.value;">
-    <option value="">--Choose an option--</option>
+  <select onchange="document.getElementById('msg5').textContent='Chosen: ' + this.value;">
+    <option value="">--Choose--</option>
     <option value="Apples">Apples</option>
     <option value="Bananas">Bananas</option>
     <option value="Cherries">Cherries</option>
