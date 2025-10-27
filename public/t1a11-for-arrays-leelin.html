@@ -33,61 +33,69 @@ Max Array Entry:
 <meta charset="UTF-8">
 <title>t1a11-for-arrays-leelin.html</title>
 </head>
-<body>
-<h2 align="center">t1a11-for-arrays-leelin.html</h2>
+<body style="font-family: Arial; text-align: center;">
+
+<h2>t1a11-for-arrays-leelin.html</h2>
 
 <script>
-  // Initialize array with default names
-  let myArray = ['Fred', 'Mary', 'Zizzy']
+  // Initialize array
+  let myArray = ['Fred', 'Mary', 'Zizzy'];
 
-  // Function to display the array up to a max index
+  // Function to display part of the array
   function showArray() {
-    let myMax = parseInt(document.getElementById('myText01').value)
-    let mySum = ''
+    let myMax = parseInt(document.getElementById('myText01').value);
+    let mySum = '';
     for (let i = 0; i < myMax && i < myArray.length; i++) {
-      mySum += i + ': ' + myArray[i] + '<br>'
+      mySum += i + ': ' + myArray[i] + '<br>';
     }
-    document.getElementById('myDiv01').innerHTML = mySum
+    document.getElementById('myDiv01').innerHTML = mySum;
   }
 
-  // Add new entry
+  // Function to add an entry
   function addEntry() {
-    let newName = prompt('Enter a new name:')
-    if (newName) {
-      myArray.push(newName)
-      alert(newName + ' added! Total entries: ' + myArray.length)
-      showArray()
+    let newName = prompt('Enter a new name:');
+    if (newName && newName.trim() !== '') {
+      myArray.push(newName.trim());
+      alert(newName + ' added! Total entries: ' + myArray.length);
+      showArray();
     }
   }
 
-  // Sort entries alphabetically
+  // Function to sort the array
   function sortArray() {
-    myArray.sort()
-    showArray()
+    myArray.sort();
+    showArray();
   }
 
-  // Reverse order
+  // Function to reverse the array
   function reverseArray() {
-    myArray.reverse()
-    showArray()
+    myArray.reverse();
+    showArray();
   }
 
-  // Join into one string
+  // Function to join array into a string
   function joinArray() {
-    document.getElementById('myDiv01').innerHTML = myArray.join(', ')
+    document.getElementById('myDiv01').innerHTML = myArray.join(', ');
   }
+
+  // Automatically show the array when the page loads
+  window.onload = showArray;
 </script>
 
-Max Array Entry: 
-<input type="text" id="myText01" value="3"><br><br>
+<p>
+  Max Array Entry: 
+  <input type="text" id="myText01" value="3" size="3">
+</p>
 
-<input type="button" value="Show Array" onClick="showArray()">
-<input type="button" value="Add Entry" onClick="addEntry()">
-<input type="button" value="Sort Array" onClick="sortArray()">
-<input type="button" value="Reverse Array" onClick="reverseArray()">
-<input type="button" value="Join Array" onClick="joinArray()">
+<p>
+  <input type="button" value="Show Array" onclick="showArray()">
+  <input type="button" value="Add Entry" onclick="addEntry()">
+  <input type="button" value="Sort Array" onclick="sortArray()">
+  <input type="button" value="Reverse Array" onclick="reverseArray()">
+  <input type="button" value="Join Array" onclick="joinArray()">
+</p>
 
-<div id="myDiv01">...</div>
+<div id="myDiv01" style="border: 1px solid #ccc; padding: 10px; width: 300px; margin: 0 auto;">...</div>
 
 </body>
 </html>
