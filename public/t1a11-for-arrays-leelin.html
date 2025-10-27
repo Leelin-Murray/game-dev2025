@@ -32,53 +32,82 @@ Max Array Entry:
 <head>
 <meta charset="UTF-8">
 <title>t1a11-for-arrays-leelin.html</title>
+<style>
+  body { font-family: Arial, sans-serif; text-align: center; margin-top: 40px; }
+  input[type="button"] { margin: 4px; padding: 6px 12px; }
+  #myDiv01 { border: 1px solid #aaa; padding: 10px; margin: 10px auto; width: 300px; min-height: 50px; background: #f9f9f9; }
+</style>
 </head>
-<body style="font-family: Arial; text-align: center;">
+<body>
 
 <h2>t1a11-for-arrays-leelin.html</h2>
 
 <script>
-  // Initialize array
+  // Initialize the array
   let myArray = ['Fred', 'Mary', 'Zizzy'];
 
-  // Function to display part of the array
+  // Display array up to max value
   function showArray() {
     let myMax = parseInt(document.getElementById('myText01').value);
-    let mySum = '';
+    let output = '';
     for (let i = 0; i < myMax && i < myArray.length; i++) {
-      mySum += i + ': ' + myArray[i] + '<br>';
+      output += i + ': ' + myArray[i] + '<br>';
     }
-    document.getElementById('myDiv01').innerHTML = mySum;
+    document.getElementById('myDiv01').innerHTML = output;
   }
 
-  // Function to add an entry
+  // Add a new name
   function addEntry() {
-    let newName = prompt('Enter a new name:');
+    let newName = prompt('Enter a new name to add:');
     if (newName && newName.trim() !== '') {
       myArray.push(newName.trim());
-      alert(newName + ' added! Total entries: ' + myArray.length);
       showArray();
     }
   }
 
-  // Function to sort the array
+  // Sort alphabetically
   function sortArray() {
     myArray.sort();
     showArray();
   }
 
-  // Function to reverse the array
+  // Reverse the array
   function reverseArray() {
     myArray.reverse();
     showArray();
   }
 
-  // Function to join array into a string
+  // Join into one string
   function joinArray() {
     document.getElementById('myDiv01').innerHTML = myArray.join(', ');
   }
 
-  // Automatically show the array when the page loads
+  // Search array for a name
+  function searchArray() {
+    let searchName = prompt('Enter a name to search for:');
+    if (searchName) {
+      let index = myArray.indexOf(searchName.trim());
+      if (index >= 0) {
+        alert(searchName + ' found at index ' + index);
+      } else {
+        alert(searchName + ' not found.');
+      }
+    }
+  }
+
+  // Delete an entry by index
+  function deleteEntry() {
+    let index = prompt('Enter index number to delete (0 to ' + (myArray.length - 1) + '):');
+    index = parseInt(index);
+    if (!isNaN(index) && index >= 0 && index < myArray.length) {
+      myArray.splice(index, 1);
+      showArray();
+    } else {
+      alert('Invalid index.');
+    }
+  }
+
+  // Show array when page loads
   window.onload = showArray;
 </script>
 
@@ -93,9 +122,11 @@ Max Array Entry:
   <input type="button" value="Sort Array" onclick="sortArray()">
   <input type="button" value="Reverse Array" onclick="reverseArray()">
   <input type="button" value="Join Array" onclick="joinArray()">
+  <input type="button" value="Search Array" onclick="searchArray()">
+  <input type="button" value="Delete Entry" onclick="deleteEntry()">
 </p>
 
-<div id="myDiv01" style="border: 1px solid #ccc; padding: 10px; width: 300px; margin: 0 auto;">...</div>
+<div id="myDiv01">...</div>
 
 </body>
 </html>
