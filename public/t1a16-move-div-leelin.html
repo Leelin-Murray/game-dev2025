@@ -1,6 +1,16 @@
 <body onkeypress="myKeyPress(event)">
 
 <script>
+   let myTimer01
+
+   funtion myAuto(){
+      const myIm = document.getElementById('myImage01')
+      myIm.style.left = parseInt(myIm.style.left) + 5 +'px'
+      if (parseInt(myIm.style.left) > 600){
+           myIm.style.left = '10px'
+      }
+    }
+   
    function myKeyPress(event) {
      alert('you pressed: ${event.key}');
    }
@@ -8,7 +18,7 @@
 
 <h1 align=center>t1a16-move-div-leelin</h1>
 
-  hhhhhhhh
+  8 types of objects moving in different ways
 
 
   <div style="position:relative; left:0; right:0; id="myDiv01">...</div>
@@ -19,7 +29,14 @@
     }">move to 100px</button><br>
 
 
-  <button onclick="{
+  <button   id="myButton02" onclick="{
      const myDiv = document.getElementById('myDiv01')
      mydiv.style.left = parseInt(myDiv.style.left) + 20 +'px'
   }">move Right</button>
+
+
+   <b onclick+="{
+      myTimer01 = setInterval(myAuto, 50)
+   }">Move auto</b><br>
+
+  <img src"" id="myImage01" width=40 style="position:relative; left:0; right:0">
