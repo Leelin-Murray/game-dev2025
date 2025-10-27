@@ -25,3 +25,69 @@ Max Array Entry:
 <div id="myDiv01">...</div>
 
 <br>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>t1a11-for-arrays-leelin.html</title>
+</head>
+<body>
+<h2 align="center">t1a11-for-arrays-leelin.html</h2>
+
+<script>
+  // Initialize array with default names
+  let myArray = ['Fred', 'Mary', 'Zizzy']
+
+  // Function to display the array up to a max index
+  function showArray() {
+    let myMax = parseInt(document.getElementById('myText01').value)
+    let mySum = ''
+    for (let i = 0; i < myMax && i < myArray.length; i++) {
+      mySum += i + ': ' + myArray[i] + '<br>'
+    }
+    document.getElementById('myDiv01').innerHTML = mySum
+  }
+
+  // Add new entry
+  function addEntry() {
+    let newName = prompt('Enter a new name:')
+    if (newName) {
+      myArray.push(newName)
+      alert(newName + ' added! Total entries: ' + myArray.length)
+      showArray()
+    }
+  }
+
+  // Sort entries alphabetically
+  function sortArray() {
+    myArray.sort()
+    showArray()
+  }
+
+  // Reverse order
+  function reverseArray() {
+    myArray.reverse()
+    showArray()
+  }
+
+  // Join into one string
+  function joinArray() {
+    document.getElementById('myDiv01').innerHTML = myArray.join(', ')
+  }
+</script>
+
+Max Array Entry: 
+<input type="text" id="myText01" value="3"><br><br>
+
+<input type="button" value="Show Array" onClick="showArray()">
+<input type="button" value="Add Entry" onClick="addEntry()">
+<input type="button" value="Sort Array" onClick="sortArray()">
+<input type="button" value="Reverse Array" onClick="reverseArray()">
+<input type="button" value="Join Array" onClick="joinArray()">
+
+<div id="myDiv01">...</div>
+
+</body>
+</html>
