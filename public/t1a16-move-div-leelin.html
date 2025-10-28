@@ -18,7 +18,158 @@
 
 <h1 align=center>t1a16-move-div-leelin</h1>
 
-  8 types of objects moving in different ways
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Moving Shapes</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #111;
+    }
+
+    .shape {
+      position: absolute;
+      animation: move 8s linear infinite;
+    }
+
+    /* SHAPES */
+    .circle {
+      width: 60px;
+      height: 60px;
+      background: crimson;
+      border-radius: 50%;
+    }
+
+    .square {
+      width: 60px;
+      height: 60px;
+      background: dodgerblue;
+    }
+
+    .rectangle {
+      width: 100px;
+      height: 50px;
+      background: limegreen;
+    }
+
+    .triangle {
+      width: 0;
+      height: 0;
+      border-left: 35px solid transparent;
+      border-right: 35px solid transparent;
+      border-bottom: 60px solid gold;
+    }
+
+    .diamond {
+      width: 60px;
+      height: 60px;
+      background: hotpink;
+      transform: rotate(45deg);
+    }
+
+    .oval {
+      width: 80px;
+      height: 50px;
+      background: turquoise;
+      border-radius: 50%;
+    }
+
+    .pentagon {
+      position: relative;
+      width: 54px;
+      border-width: 0 18px 32px 18px;
+      border-style: solid;
+      border-color: transparent transparent violet transparent;
+    }
+    .pentagon:before {
+      content: '';
+      position: absolute;
+      top: -20px;
+      left: -18px;
+      border-width: 0 45px 20px 45px;
+      border-style: solid;
+      border-color: transparent transparent violet transparent;
+    }
+
+    .star {
+      color: orange;
+      position: relative;
+      display: block;
+      width: 0px;
+      height: 0px;
+      border-right: 25px solid transparent;
+      border-bottom: 18px solid orange;
+      border-left: 25px solid transparent;
+      transform: rotate(35deg);
+    }
+    .star:before {
+      border-bottom: 20px solid orange;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      position: absolute;
+      height: 0;
+      width: 0;
+      top: -12px;
+      left: -17px;
+      display: block;
+      content: '';
+      transform: rotate(-35deg);
+    }
+    .star:after {
+      position: absolute;
+      display: block;
+      top: 0;
+      left: -25px;
+      width: 0;
+      height: 0;
+      border-right: 25px solid transparent;
+      border-bottom: 18px solid orange;
+      border-left: 25px solid transparent;
+      transform: rotate(-70deg);
+      content: '';
+    }
+  </style>
+</head>
+<body>
+  <div class="shape circle"></div>
+  <div class="shape square"></div>
+  <div class="shape rectangle"></div>
+  <div class="shape triangle"></div>
+  <div class="shape diamond"></div>
+  <div class="shape oval"></div>
+  <div class="shape pentagon"></div>
+  <div class="shape star"></div>
+
+  <script>
+    const shapes = document.querySelectorAll('.shape');
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    shapes.forEach(shape => {
+      // random starting position
+      shape.style.top = Math.random() * height + 'px';
+      shape.style.left = Math.random() * width + 'px';
+
+      moveShape(shape);
+    });
+
+    function moveShape(shape) {
+      const duration = 3 + Math.random() * 5; // random speed
+      const newX = Math.random() * (width - 100);
+      const newY = Math.random() * (height - 100);
+      shape.style.transition = `all ${duration}s linear`;
+      shape.style.left = `${newX}px`;
+      shape.style.top = `${newY}px`;
+
+      setTimeout(() => moveShape(shape), duration * 1000);
+    }
+  </script>
+</body>
+</html>
 
 
   <div style="position:relative; left:0; right:0; id="myDiv01">...</div>
