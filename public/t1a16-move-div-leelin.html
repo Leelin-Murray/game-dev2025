@@ -1,38 +1,17 @@
-<body onkeypress="myKeyPress(event)">
-
-<script>
-   let myTimer01
-
-   funtion myAuto(){
-      const myIm = document.getElementById('myImage01')
-      myIm.style.left = parseInt(myIm.style.left) + 5 +'px'
-      if (parseInt(myIm.style.left) > 600){
-           myIm.style.left = '10px'
-      }
-    }
-   
-   function myKeyPress(event) {
-     alert('you pressed: ${event.key}');
-   }
-</script>
-
-<h1 align=center>t1a16-move-div-leelin</h1>
-
-   <!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" onkeypress="myKeyPress(event)">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Moving Shapes (Button Activated)</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>t1a16-move-div-leelin</title>
+
   <style>
     body {
       margin: 0;
-      overflow: hidden;
       background: white;
       font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      overflow: hidden;
+      text-align: center;
     }
 
     h1 {
@@ -40,9 +19,9 @@
       color: #333;
     }
 
-    button {
-      margin: 15px;
-      padding: 10px 20px;
+    button, b {
+      margin: 5px;
+      padding: 10px 15px;
       font-size: 16px;
       cursor: pointer;
       background: #0078ff;
@@ -52,7 +31,7 @@
       transition: background 0.3s;
     }
 
-    button:hover {
+    button:hover, b:hover {
       background: #005ec4;
     }
 
@@ -62,47 +41,17 @@
     }
 
     /* SHAPES */
-    .circle {
-      width: 60px;
-      height: 60px;
-      background: crimson;
-      border-radius: 50%;
-    }
-
-    .square {
-      width: 60px;
-      height: 60px;
-      background: dodgerblue;
-    }
-
-    .rectangle {
-      width: 100px;
-      height: 50px;
-      background: limegreen;
-    }
-
+    .circle { width: 60px; height: 60px; background: crimson; border-radius: 50%; }
+    .square { width: 60px; height: 60px; background: dodgerblue; }
+    .rectangle { width: 100px; height: 50px; background: limegreen; }
     .triangle {
-      width: 0;
-      height: 0;
+      width: 0; height: 0;
       border-left: 35px solid transparent;
       border-right: 35px solid transparent;
       border-bottom: 60px solid gold;
     }
-
-    .diamond {
-      width: 60px;
-      height: 60px;
-      background: hotpink;
-      transform: rotate(45deg);
-    }
-
-    .oval {
-      width: 80px;
-      height: 50px;
-      background: turquoise;
-      border-radius: 50%;
-    }
-
+    .diamond { width: 60px; height: 60px; background: hotpink; transform: rotate(45deg); }
+    .oval { width: 80px; height: 50px; background: turquoise; border-radius: 50%; }
     .pentagon {
       position: relative;
       width: 54px;
@@ -113,13 +62,11 @@
     .pentagon:before {
       content: '';
       position: absolute;
-      top: -20px;
-      left: -18px;
+      top: -20px; left: -18px;
       border-width: 0 45px 20px 45px;
       border-style: solid;
       border-color: transparent transparent violet transparent;
     }
-
     .star {
       color: orange;
       position: relative;
@@ -136,10 +83,8 @@
       border-left: 8px solid transparent;
       border-right: 8px solid transparent;
       position: absolute;
-      height: 0;
-      width: 0;
-      top: -12px;
-      left: -17px;
+      height: 0; width: 0;
+      top: -12px; left: -17px;
       display: block;
       content: '';
       transform: rotate(-35deg);
@@ -147,23 +92,42 @@
     .star:after {
       position: absolute;
       display: block;
-      top: 0;
-      left: -25px;
-      width: 0;
-      height: 0;
+      top: 0; left: -25px;
+      width: 0; height: 0;
       border-right: 25px solid transparent;
       border-bottom: 18px solid orange;
       border-left: 25px solid transparent;
       transform: rotate(-70deg);
       content: '';
     }
+
+    #myImage01 {
+      position: relative;
+      left: 0;
+      width: 80px;
+      margin-top: 20px;
+    }
   </style>
 </head>
-<body>
-  <h1>Moving Shapes Demo</h1>
-  <button id="startBtn">Start Moving</button>
 
-  <!-- SHAPES -->
+<body>
+  <h1>t1a16-move-div-leelin</h1>
+
+  <!-- IMAGE MOVEMENT -->
+  <img src="https://artfiles.alphacoders.com/593/thumb-1920-59396.jpg" id="myImage01">
+
+  <div>
+    <button onclick="moveTo100()">Move to 100px</button>
+    <button onclick="moveRight()">Move Right</button>
+    <b onclick="startAuto()">Move Auto</b>
+  </div>
+
+  <hr>
+
+  <!-- MOVING SHAPES SECTION -->
+  <h2>Moving Shapes Demo</h2>
+  <button id="startBtn">Start Moving Shapes</button>
+
   <div class="shape circle"></div>
   <div class="shape square"></div>
   <div class="shape rectangle"></div>
@@ -174,11 +138,41 @@
   <div class="shape star"></div>
 
   <script>
+    // ---- IMAGE MOVEMENT ----
+    let myTimer01;
+
+    function myAuto() {
+      const myIm = document.getElementById('myImage01');
+      myIm.style.left = parseInt(myIm.style.left || 0) + 5 + 'px';
+      if (parseInt(myIm.style.left) > 600) {
+        myIm.style.left = '10px';
+      }
+    }
+
+    function startAuto() {
+      clearInterval(myTimer01);
+      myTimer01 = setInterval(myAuto, 50);
+    }
+
+    function moveTo100() {
+      const myDiv = document.getElementById('myImage01');
+      myDiv.style.left = '100px';
+    }
+
+    function moveRight() {
+      const myDiv = document.getElementById('myImage01');
+      myDiv.style.left = parseInt(myDiv.style.left || 0) + 20 + 'px';
+    }
+
+    function myKeyPress(event) {
+      alert(`You pressed: ${event.key}`);
+    }
+
+    // ---- SHAPE MOVEMENT ----
     const shapes = document.querySelectorAll('.shape');
     const startBtn = document.getElementById('startBtn');
     let isMoving = false;
 
-    // Place shapes randomly at start
     function placeShapes() {
       const width = window.innerWidth;
       const height = window.innerHeight;
@@ -218,25 +212,3 @@
   </script>
 </body>
 </html>
-
-
-
-  <div style="position:relative; left:0; right:0; id="myDiv01">...</div>
-
-  <button onclick="{
-     const myDiv = document.getElementById('myDiv01')
-    myDiv.style.left = '100px'
-    }">move to 100px</button><br>
-
-
-  <button   id="myButton02" onclick="{
-     const myDiv = document.getElementById('myDiv01')
-     mydiv.style.left = parseInt(myDiv.style.left) + 20 +'px'
-  }">move Right</button>
-
-
-   <b onclick+="{
-      myTimer01 = setInterval(myAuto, 50)
-   }">Move auto</b><br>
-
-  <img src="https://artfiles.alphacoders.com/593/thumb-1920-59396.jpg" id="myImage01" width=40 style="position:relative; left:0; right:0">
