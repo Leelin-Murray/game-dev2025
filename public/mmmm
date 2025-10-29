@@ -1,1 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>t1a13-extend-class-by-leelin.html</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    h2, h4 {
+      text-align: center;
+    }
+    #myDiv01 {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>t1a13-extend-class-by-leelin.html</h2>
+
+  <h4>Example working classes code</h4>
+  <input type="button" value="Example Class Set and Show Class Animal" onclick="showAnimal()">
+
+  <h4>Example extending Class code</h4>
+  Nothing: <input type="text" id="myText01" value="Useless at the moment"><br><br>
+
+  <input type="button" value="Example Extend Class Animal" onclick="showCat()">
+
+  <div id="myDiv01">...</div>
+
+  <script>
+    // Base class
+    class MyAnimal {
+      constructor(name, age) {
+        this.name = name;
+        this.age = age;
+      }
+
+      show() {
+        document.getElementById('myDiv01').innerHTML = 
+          `Hello ${this.name}, age ${this.age}<br>`;
+      }
+    }
 
