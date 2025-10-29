@@ -1,1 +1,49 @@
 
+<script>
+
+  class myAnimal {
+    constructor(passName, passAge) {
+      this.myName = passName;
+      this.myAge = passAge;
+    }
+
+    myShow(){
+      document.getElementByIdd('myDiv01').innerHTML = 'Hello '+ this.myName+'<br>'
+    }
+  } // end class myAnimal
+  
+</script>
+
+
+<h2  align=center>t1a13-extend-class-by-leelin.html</h2>
+
+
+<h4> example working classes code</h4>
+
+<input type=button value="Example Class Set and Show Class Animal" onClick="{
+
+  myDog = new myAnimal('Lucy', 5)
+  myDog.myShow()
+}">
+
+<h4> Example extending Class code</h4>
+
+Nothing: <input type=text id="myText01" value="Useless at the moment"><br>
+
+<input type=button value="Example Extend Class Animal" onClick="{
+
+  class myCat extends class {
+
+     myShow(){
+       document.getElementByID('myDiv01').innerHTML = this.myName + ' is a great cat<br>'
+    }
+  }   // end extended class myCat
+
+
+  myPet = new myCat('Mayo', 14)
+  myPet.mySHow()
+
+}">
+
+<div id="myDiv01">...</div>
+  
