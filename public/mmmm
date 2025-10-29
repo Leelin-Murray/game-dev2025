@@ -1,48 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>t1a13-extend-class-by-leelin.html</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-    h2, h4 {
-      text-align: center;
-    }
-    #myDiv01 {
-      margin-top: 15px;
-      font-weight: bold;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Extension Example</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; padding: 20px; background-color: #f7f7f7; }
+        .container { max-width: 800px; margin: 0 auto; background-color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+        h2 { text-align: center; color: #1e40af; margin-bottom: 20px; }
+        h4 { margin-top: 20px; color: #4b5563; }
+        .button-group { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        input[type="button"] {
+            background-color: #3b82f6;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        input[type="button"]:hover {
+            background-color: #2563eb;
+        }
+        #myDiv01 {
+            margin-top: 20px;
+            padding: 15px;
+            border: 2px dashed #93c5fd;
+            background-color: #eff6ff;
+            border-radius: 8px;
+            min-height: 50px;
+        }
+    </style>
+
+    <script>
+        // Use a self-invoking function to define classes cleanly
+        (function() {
+
+            // --- 1. Parent Class ---
+            class myAnimal {
+                constructor(passName, passAge) {
+                    this.myName = passName;
+                    this.myAge = passAge;
+                }
+
+                // FIX: Corrected getElementByIdd to getElementById
+                myShow() {
+                    document.getElementById('myDiv01').innerHTML = 'Hello, my name is **' + this.myName + '** and I am ' + this.myAge + ' years old.<br>';
+                }
+            } // end class myAnimal
+
+            // --- 2. Extended Child Class ---
+            class myCat extends myAnimal {
+                // To properly extend, you MUST call super() in the constructor
+                constructor(passName, passAge, passBreed) {
+                    super(passName, passAge); // Calls the parent's constructor (myAnimal)
+                    this.myBreed = passBreed; // Adds a new property specific to myCat
+                }
+
+                // OVERRIDE: Changing the behavior of the parent's myShow method
+                myShow() {
+                    document.getElementById('myDiv01').innerHTML = `**${this.myName}** is a ${this.myAge} year old ${this.myBreed} cat.<br>`;
+                }
+
+                // NEW FUNCTION: Added requested new function/method
+                myStatus() {
+                    document.getElementById('myDiv01').innerHTML += `Current Status: ${this.myName} is very tired and needs a catnap.`;
+                }
+            } // end class myCat
+
+            // Attach classes to the global window object so they can be accessed by onClick handlers
+            window.myAnimal = myAnimal;
+            window.myCat = myCat;
+        })();
+    </script>
 </head>
 <body>
 
-  <h2>t1a13-extend-class-by-leelin.html</h2>
+<div class="container">
+    <h2 class="text-3xl font-bold">t1a13-extend-class-by-leelin.html</h2>
 
-  <h4>Example working classes code</h4>
-  <input type="button" value="Example Class Set and Show Class Animal" onclick="showAnimal()">
+    <hr class="my-4">
 
-  <h4>Example extending Class code</h4>
-  Nothing: <input type="text" id="myText01" value="Useless at the moment"><br><br>
+    <h4 class="font-semibold">Example Parent Class (`myAnimal`)</h4>
+    <div class="button-group">
+        <input type="button" value="1. Create & Show Class Animal (myDog)" onClick="{
+            // Instantiates the parent class
+            myDog = new myAnimal('Lucy', 5)
+            myDog.myShow()
+        }">
+    </div>
 
-  <input type="button" value="Example Extend Class Animal" onclick="showCat()">
+    <h4 class="font-semibold">Example Extending Class (`myCat`)</h4>
+    <p class="text-sm text-gray-600 mb-2">The `myCat` class extends `myAnimal`, overrides `myShow`, and adds `myStatus`.</p>
+    <div class="button-group">
+        <input type="button" value="2. Create & Show Extended Class Cat (myPet)" onClick="{
+            // Instantiates the child class (myCat) and passes all required arguments
+            myPet = new myCat('Mayo', 14, 'Siamese')
+            
+            // Calls the overridden myShow method
+            myPet.myShow()
 
-  <div id="myDiv01">...</div>
+            // Calls the new function we added
+            myPet.myStatus()
+        }">
+    </div>
 
-  <script>
-    // Base class
-    class MyAnimal {
-      constructor(name, age) {
-        this.name = name;
-        this.age = age;
-      }
+    <div id="myDiv01" class="text-lg font-medium">... Output appears here ...</div>
+</div>
 
-      show() {
-        document.getElementById('myDiv01').innerHTML = 
-          `Hello ${this.name}, age ${this.age}<br>`;
-      }
-    }
-
+</body>
+</html>
