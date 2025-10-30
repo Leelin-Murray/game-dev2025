@@ -1,28 +1,54 @@
-<script>
-  let myArray = new Array()
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Array Example - Improved</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 40px;
+    }
+    input, button {
+      margin: 5px;
+      padding: 5px;
+      font-size: 1em;
+    }
+  </style>
+</head>
+<body>
 
-  myArray[0] = 'Fred'
-  myArray[1] = 'Mary'
-  myArray[2] = 'Zizzy'
-</script>
+  <h2>t1a11-for-arrays-leelin.html</h2>
 
-<h2 align="center">t1a11-for-arrays-leelin.html</h2>
+  <label for="myText01">Max Array Entry:</label>
+  <input type="number" id="myText01" value="3" min="1" max="10"><br>
 
-Max Array Entry: 
-<input type="text" id="myText01" value="3"><br>
+  <button id="showArrayBtn">Show Array</button>
 
-<input type="button" value="Example onClick" onClick="{
-   let myMax = document.getElementById('myText01').value
-   let mySum = ''
-   document.getElementById('myDiv01').innerHTML = ''
+  <div id="myDiv01">...</div>
 
-   for (let myLoop = 0; myLoop < myMax; myLoop++) {
-       mySum += myLoop + ': ' + myArray[myLoop] + '<br>'
-   }
+  <script>
+    // Use array literal notation
+    const myArray = ['Fred', 'Mary', 'Zizzy'];
 
-   document.getElementById('myDiv01').innerHTML = mySum
-}">
-<div id="myDiv01">...</div>
+    // Attach event listener (best practice vs inline onclick)
+    document.getElementById('showArrayBtn').addEventListener('click', () => {
+      const myMax = parseInt(document.getElementById('myText01').value, 10);
+      let output = '';
 
-<br>
+      // Use Math.min() to prevent out-of-bounds access
+      for (let i = 0; i < Math.min(myMax, myArray.length); i++) {
+        output += `${i}: ${myArray[i]}<br>`;
+      }
 
+      // Handle case where user enters a value > array length
+      if (myMax > myArray.length) {
+        output += `<em>Note:</em> You requested ${myMax} entries, but the array only has ${myArray.length}.`;
+      }
+
+      document.getElementById('myDiv01').innerHTML = output;
+    });
+  </script>
+
+</body>
+</html>
