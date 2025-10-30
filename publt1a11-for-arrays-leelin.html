@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Array Display Example</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      background: linear-gradient(135deg, #f0f4ff, #e8ebff);
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+      margin: 0;
+      padding-top: 50px;
+    }
+
+    h2 {
+      color: #4455aa;
+      margin-bottom: 10px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      padding: 20px 30px;
+      width: 350px;
+      text-align: center;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      text-align: center;
+      font-size: 1em;
+      margin-bottom: 12px;
+      outline: none;
+      transition: 0.2s;
+    }
+
+    input[type="number"]:focus {
+      border-color: #5566ff;
+      box-shadow: 0 0 5px rgba(85,102,255,0.3);
+    }
+
+    button {
+      background-color: #5566ff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 16px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background 0.25s ease;
+    }
+
+    button:hover {
+      background-color: #3344cc;
+    }
+
+    #myDiv01 {
+      margin-top: 20px;
+      padding: 10px;
+      border-top: 1px solid #ddd;
+      font-family: monospace;
+      text-align: left;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    em {
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Array Viewer</h2>
+
+    <label for="myText01">Max Array Entry:</label>
+    <input type="number" id="myText01" value="3" min="1" max="10">
+
+    <button id="showArrayBtn">Show Array</button>
+
+    <div id="myDiv01">Click “Show Array” to see the results...</div>
+  </div>
+
+  <script>
+    const myArray = ['Fred', 'Mary', 'Zizzy', 'Alex', 'Sophie'];
+
+    document.getElementById('showArrayBtn').addEventListener('click', () => {
+      const myMax = parseInt(document.getElementById('myText01').value, 10);
+      let output = '';
+
+      for (let i = 0; i < Math.min(myMax, myArray.length); i++) {
+        output += `${i}: ${myArray[i]}<br>`;
+      }
+
+      if (myMax > myArray.length) {
+        output += `<em>Note: You requested ${myMax} entries, but the array only has ${myArray.length}.</em>`;
+      }
+
+      document.getElementById('myDiv01').innerHTML = output;
+    });
+  </script>
+
+</body>
+</html>
+
