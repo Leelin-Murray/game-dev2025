@@ -29,7 +29,7 @@
 
   <script>
     // Use array literal notation
-    const myArray = ['Fred', 'Mary', 'Zizzy'];
+    const myArray = ['Fred', 'Mary', 'Zizzy', 'Big', 'Small', 'Thanatos', 'Orpheus', 'Izanagi'];
 
     // Attach event listener (best practice vs inline onclick)
     document.getElementById('showArrayBtn').addEventListener('click', () => {
@@ -43,7 +43,7 @@
 
       // Handle case where user enters a value > array length
       if (myMax > myArray.length) {
-        output += `<em>Note:</em> You requested ${myMax} entries, but the array only has ${myArray.length}.`;
+        output +=' You requested ${myMax} entries, but the array only has ${myArray.length}.`;
       }
 
       document.getElementById('myDiv01').innerHTML = output;
