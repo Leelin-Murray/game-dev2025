@@ -1,54 +1,253 @@
 <h1 align=center>t2a17-prince-leelin.html</h1>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dot Crown Animation</title>
-  <style>
-    body {
-      background-color: #111;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
-    }
-
-    .dot {
-      position: absolute;
-      width: 20px;
-      height: 20px;
-      background-color: gold;
-      border-radius: 50%;
-      box-shadow: 0 0 15px gold;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crown Pattern Animator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        #animationCanvas {
+            background-color: #ffffff;
+            border: 8px solid #3b82f6; /* Blue border for a regal look */
+            border-radius: 16px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15), 0 6px 6px rgba(0, 0, 0, 0.1);
+            max-width: 90vw;
+            width: 500px;
+            height: 300px;
+            cursor: pointer;
+            transition: transform 0.3s ease-in-out;
+            margin-bottom: 20px;
+        }
+        #animationCanvas:hover {
+            transform: scale(1.02);
+        }
+        .container {
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        h1 {
+            color: #1e3a8a;
+            margin-bottom: 0.5rem;
+        }
+        .control-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: #e0f2fe; /* Light blue background for controls */
+            border-radius: 8px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .label-span {
+            font-weight: 600;
+            color: #1e40af;
+            width: 120px;
+            text-align: left;
+        }
+    </style>
 </head>
 <body>
-  <div class="dot" id="dot"></div>
+    <div class="container p-4">
+        <h1 class="text-3xl font-bold">Prince</h1>
+        <p class="text-gray-600 mb-6">A dot tracing a crown pattern. Click the canvas to pause/Resume</p>
 
-  <script>
-    const dot = document.getElementById("dot");
-    const amplitude = 100; // height of the peaks
-    const frequency = 4;   // number of "crowns" across the width
-    const speed = 0.01;    // animation speed
-    let t = 0;
+        <!-- Control Panel -->
+        <div id="controls" class="mb-8">
+            <!-- Segment Width Control -->
+            <div class="control-group">
+                <span class="label-span">Width (<span id="widthValue">100</span>)</span>
+                <input type="range" id="segmentWidth" min="20" max="200" step="5" value="100" class="w-2/3 appearance-none bg-blue-200 h-2 rounded-lg cursor-pointer">
+            </div>
 
-    function animate() {
-      const width = window.innerWidth;
-      const x = (t * 200) % width; // move dot horizontally
-      const y = window.innerHeight / 2 - 
-                Math.abs(Math.sin((x / width) * frequency * Math.PI * 2)) * amplitude;
+            <!-- Amplitude Control -->
+            <div class="control-group">
+                <span class="label-span">Height (<span id="amplitudeValue">80</span>)</span>
+                <input type="range" id="amplitude" min="20" max="140" step="5" value="80" class="w-2/3 appearance-none bg-blue-200 h-2 rounded-lg cursor-pointer">
+            </div>
 
-      dot.style.left = `${x}px`;
-      dot.style.top = `${y}px`;
+            <!-- Speed Control -->
+            <div class="control-group">
+                <span class="label-span">Speed (<span id="speedValue">0.05</span>)</span>
+                <input type="range" id="speed" min="0.01" max="0.2" step="0.01" value="0.05" class="w-2/3 appearance-none bg-blue-200 h-2 rounded-lg cursor-pointer">
+            </div>
+        </div>
+        <!-- End Control Panel -->
 
-      t += speed;
-      requestAnimationFrame(animate);
-    }
+        <canvas id="animationCanvas" width="500" height="300"></canvas>
+    </div>
 
-    animate();
-  </script>
+    <script>
+        const canvas = document.getElementById('animationCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Control element references
+        const widthInput = document.getElementById('segmentWidth');
+        const widthValueSpan = document.getElementById('widthValue');
+        const ampInput = document.getElementById('amplitude');
+        const ampValueSpan = document.getElementById('amplitudeValue');
+        const speedInput = document.getElementById('speed');
+        const speedValueSpan = document.getElementById('speedValue');
+
+        // Initial Configuration Variables (now dynamic)
+        const BASE_Y = canvas.height - 50; // The baseline (bottom) of the crown
+
+        let timeOffset = 0; // Tracks the elapsed time for continuous movement
+        let isPaused = false;
+        const DOT_RADIUS = 8;
+
+        /**
+         * Converts base64 audio data (PCM) to a playable WAV Blob.
+         * This utility is included for API compatibility but is not used here.
+         */
+        function base64ToArrayBuffer(base64) {
+            const binaryString = atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        /**
+         * Calculates the dot's Y position based on its X position, creating the crown (sawtooth/triangle) pattern.
+         * It reads the current Segment Width and Amplitude from the input sliders.
+         * * @param {number} x The current horizontal position of the dot.
+         * @returns {number} The calculated vertical position (y-coordinate).
+         */
+        function getCrownY(x) {
+            // Read parameters dynamically
+            const SEGMENT_WIDTH = parseFloat(widthInput.value);
+            const AMPLITUDE = parseFloat(ampInput.value);
+
+            // Calculate the position relative to the start of the current segment (0 to SEGMENT_WIDTH)
+            const localX = x % SEGMENT_WIDTH; 
+
+            // Half the segment width is where the peak occurs
+            const halfSegment = SEGMENT_WIDTH / 2;
+
+            let y;
+            if (localX < halfSegment) {
+                // 1. Base to Peak 
+                // progress goes from 0 to 1
+                const progress = localX / halfSegment; 
+                
+                // y starts at BASE_Y and moves up towards BASE_Y - AMPLITUDE
+                y = BASE_Y - (progress * AMPLITUDE);
+            } else {
+                // 2. Peak to Base
+                // progress goes from 0 to 1
+                const progress = (localX - halfSegment) / halfSegment; 
+                
+                // y starts at the Peak (BASE_Y - AMPLITUDE) and moves down towards BASE_Y
+                y = (BASE_Y - AMPLITUDE) + (progress * AMPLITUDE);
+            }
+
+            return y;
+        }
+
+        /**
+         * Updates the numerical display next to each slider.
+         */
+        function updateDisplay() {
+            widthValueSpan.textContent = widthInput.value;
+            ampValueSpan.textContent = ampInput.value;
+            // Format speed to two decimal places
+            speedValueSpan.textContent = parseFloat(speedInput.value).toFixed(2);
+        }
+
+        /**
+         * The main animation loop.
+         */
+        function animate() {
+            // Read parameters dynamically
+            const SPEED = parseFloat(speedInput.value);
+
+            if (!isPaused) {
+                // Clear the canvas on each frame
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // --- 1. Draw the Path Line ---
+                ctx.beginPath();
+                ctx.strokeStyle = '#93c5fd'; // Light blue
+                ctx.lineWidth = 2;
+                ctx.moveTo(0, getCrownY(0));
+                
+                // Draw the full path across the canvas width
+                for (let i = 1; i < canvas.width; i++) {
+                    ctx.lineTo(i, getCrownY(i));
+                }
+                ctx.stroke();
+
+                // --- 2. Calculate Dot Position ---
+                // Continuous X movement over time
+                timeOffset += SPEED;
+                
+                // Wrap the x position so the dot stays within the canvas width 
+                let dotX = (timeOffset * 10) % canvas.width;
+                let dotY = getCrownY(dotX);
+
+                // --- 3. Draw the Dot ---
+                ctx.beginPath();
+                ctx.arc(dotX, dotY, DOT_RADIUS, 0, Math.PI * 2);
+                
+                // Use a gold color for the "crown" effect
+                ctx.fillStyle = '#f59e0b'; // Amber/Gold
+                ctx.shadowColor = '#d97706';
+                ctx.shadowBlur = 15;
+                ctx.fill();
+
+                // Draw a small highlight to make it look like a gem/orb
+                ctx.beginPath();
+                ctx.arc(dotX + DOT_RADIUS * 0.3, dotY - DOT_RADIUS * 0.3, DOT_RADIUS * 0.2, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.shadowBlur = 0; // Disable shadow for the highlight
+                ctx.fill();
+            }
+            
+            // Request the next frame
+            requestAnimationFrame(animate);
+        }
+
+        // --- Event Listeners ---
+
+        // Update parameters and display when the slider moves
+        widthInput.addEventListener('input', updateDisplay);
+        ampInput.addEventListener('input', updateDisplay);
+        speedInput.addEventListener('input', updateDisplay);
+        
+        // Toggle pause/play on canvas click
+        canvas.addEventListener('click', () => {
+            isPaused = !isPaused;
+            if (isPaused) {
+                console.log("Animation Paused");
+            } else {
+                console.log("Animation Resumed");
+            }
+        });
+
+        // Start the animation loop and set initial display values
+        window.onload = function () {
+            updateDisplay();
+            animate();
+        };
+
+    </script>
 </body>
 </html>
