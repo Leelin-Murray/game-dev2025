@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garden Defense</title>
+    <!-- Load Tailwind CSS for base styling and responsiveness -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for the game to give it a cartoony, vibrant look */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b1a0e; /* Dark green/soil background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 10px;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 1200px;
+            background-color: #215c2d; /* Lighter green for the lawn */
+            border: 8px solid #6d4c41; /* Soil border */
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            gap: 10px;
+        }
+
+        #ui-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        #sun-counter {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffcc00; /* Sun yellow */
+            padding: 5px 15px;
+            background-color: #388e3c;
+            border-radius: 9999px;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        #plant-selection {
+            display: flex;
+            gap: 10px;
+        }
+
+        .plant-card, .tool-card {
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            transition: all 0.1s ease-in-out;
+            border: 3px solid transparent;
+            color: white;
+            background-color: #43a047; /* Plant green */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            user-select: none;
+            flex-shrink: 0; /* Prevent shrinking on smaller screens */
+            position: relative;
+        }
+        
+        /* Specific styling for the Shovel tool */
+        .tool-card {
+             background-color: #9c27b0; /* Purple for tool */
+        }
+        .tool-card:hover:not(.selected) {
+             background-color: #ab47bc;
+             transform: translateY(-2px);
+        }
+
+        .plant-card:hover:not(.selected) {
+            background-color: #66bb6a;
+            transform: translateY(-2px);
+        }
+
+        .plant-card.selected, .tool-card.selected {
+            border-color: #ffcc00; /* Yellow highlight */
+            background-color: #388e3c;
+            box-shadow: 0 0 10px #ffcc00;
+        }
+
+        .plant-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* New CSS for Cooldown Overlay */
+        .cooldown-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 8px;
+            z-index: 10;
+        }
+
+        #game-messages {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px 40px;
+            background-color: rgba(0, 0, 0, 0.85);
+            color: white;
+            border-radius: 12px;
+            text-align: center;
+            z-index: 1000;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            font-size: 1.8rem;
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        #restart-button {
+            padding: 10px 20px;
+            background-color: #f44336;
+            color: white;
+            font-weight: bold;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+            cursor: pointer;
+        }
+
+        #restart-button:hover {
+            background-color: #e53935;
+        }
+
+        canvas {
+            background-color: #388e3c; /* Game grid background */
+            border-radius: 8px;
+            touch-action: manipulation; /* Improves touch responsiveness */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            #sun-counter {
+                font-size: 1.2rem;
+                padding: 3px 10px;
+            }
+            .plant-card, .tool-card {
+                padding: 6px 8px;
+                font-size: 0.8rem;
+            }
+            .cooldown-overlay {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="ui-bar">
+        <div id="sun-counter">☀️ <span id="current-sun">50</span></div>
+        <div id="plant-selection">
+            <!-- Plant and Tool cards will be injected here -->
+        </div>
+    </div>
+    <canvas id="gameCanvas"></canvas>
+</div>
+
+<div id="game-messages">
+    <div id="message-text"></div>
+    <button id="restart-button">Restart Game</button>
+</div>
+
+<script>
+    // Constants and Setup
+    const CANVAS = document.getElementById('gameCanvas');
+    const CTX = CANVAS.getContext('2d');
+    const SUN_DISPLAY = document.getElementById('current-sun');
+    const PLANT_SELECTION_DIV = document.getElementById('plant-selection');
+    const MESSAGES_DIV = document.getElementById('game-messages');
+    const MESSAGE_TEXT = document.getElementById('message-text');
+    const RESTART_BUTTON = document.getElementById('restart-button');
+
+    // Game state variables
+    let gameLoopInterval;
+    let sun = 50;
+    let plants = [];
+    let zombies = [];
+    let projectiles = [];
+    let sunDrops = [];
+    let selectedPlantType = null; // Can hold a plant type or the shovel tool
+    let tileSize = 80;
+    const ROWS = 5;
+    const COLS = 12; // INCREASED GARDEN LENGTH
+    let isGameOver = false;
+    
+    // Global cooldown tracker for plant placement
+    let cooldowns = {};
+
+    // Timing and Spawning
+    let sunGenerationTimer = 0;
+    const SUN_GENERATION_INTERVAL = 500; // Increased to 500 frames (~8.3s) for slower passive sun
+    let zombieSpawnTimer = 0;
+    let zombieSpawnDelay = 300; // Initial delay in frames
+
+    // Tool Definition
+    const SHOVEL_TOOL = { name: 'Shovel', emoji: '🔪', type: 'tool', cost: 0 };
+
+    // Unit Definitions (using objects for better structure)
+    const UNIT_TYPES = {
+        // Plants now include a 'cooldown' property in frames (60 frames = 1 second)
+        SUNFLOWER: { name: 'Sunflower', cost: 50, hp: 5, emoji: '🌻', productionRate: 450, type: 'generator', cooldown: 50 * 6 }, // Increased production rate to 450 frames (~7.5s)
+        PEASHOOTER: { name: 'Peashooter', cost: 100, hp: 5, emoji: '🌿', attackRate: 120, type: 'attacker', cooldown: 100 * 6 }, // SLOWED FIRE RATE (120 frames = 2 seconds)
+        REPEATER: { name: 'Repeater', cost: 200, hp: 6, emoji: '🌱🌱', attackRate: 120, type: 'attacker', cooldown: 150 * 6, numShots: 2 }, // SLOWED FIRE RATE
+        ICE_PEASHOOTER: { name: 'Ice Pea', cost: 175, hp: 5, emoji: '🥶🌿', attackRate: 120, type: 'attacker', projectile: 'ice', cooldown: 150 * 6 }, // SLOWED FIRE RATE
+        WALLNUT: { name: 'Wall-Nut', cost: 50, hp: 30, emoji: '🌰', type: 'defender', cooldown: 300 * 6 }, // 30s cooldown
+        CHOMPER: { name: 'Chomper', cost: 150, hp: 10, emoji: '👾', type: 'chomper', digestTime: 600, cooldown: 400 * 6 }, // 40s cooldown, Digest time is 10 seconds (600 frames)
+
+        // Zombies
+        ZOMBIE: { name: 'Zombie', hp: 10, speed: 0.2, damage: 1, emoji: '🧟' },
+        CONEHEAD_ZOMBIE: { name: 'Conehead', hp: 25, speed: 0.15, damage: 1, emoji: '🪖🧟' },
+        // Newspaper zombie has 25 HP for paper, 10 HP for head. Total 35. Enraged when paper is lost.
+        NEWSPAPER_ZOMBIE: { name: 'Newspaper', hp: 35, speed: 0.15, damage: 1, emoji: '📰🧟', enragedSpeed: 0.3, paperLostHP: 10 },
+        FOOTBALL_ZOMBIE: { name: 'Football', hp: 80, speed: 0.4, damage: 2, emoji: '🏈🧟' }
+    };
+
+    // --- Utility Functions ---
+
+    // Function to calculate grid size and set canvas dimensions
+    function resizeCanvas() {
+        const containerWidth = document.getElementById('game-container').clientWidth - 20; // Padding consideration
+        tileSize = Math.floor(containerWidth / COLS);
+        // Ensure tile size doesn't make the canvas too tall on very wide/short screens
+        const maxHeight = window.innerHeight - document.getElementById('ui-bar').clientHeight - 50;
+        if (tileSize * ROWS > maxHeight) {
+             tileSize = Math.floor(maxHeight / ROWS);
+        }
+
+        if (tileSize < 40) tileSize = 40; // Minimum size for mobile
+        
+        CANVAS.width = tileSize * COLS;
+        CANVAS.height = tileSize * ROWS;
+    }
+    
+    // Show a custom message box
+    function showMessage(text, isRestartable = false) {
+        MESSAGE_TEXT.textContent = text;
+        MESSAGES_DIV.style.display = 'flex';
+        RESTART_BUTTON.style.display = isRestartable ? 'block' : 'none';
+        isGameOver = true;
+        clearInterval(gameLoopInterval);
+    }
+
+    // --- Class Definitions ---
+
+    class Unit {
+        constructor(x, y, hp, emoji) {
+            this.x = x;
+            this.y = y;
+            this.hp = hp;
+            this.maxHp = hp;
+            this.emoji = emoji;
+            this.gridX = Math.floor(x / tileSize);
+            this.gridY = Math.floor(y / tileSize);
+        }
+
+        draw() {
+            CTX.save();
+            // Draw unit emoji (Updated size factor to 0.48)
+            CTX.font = `${tileSize * 0.48}px sans-serif`;
+            CTX.textAlign = 'center';
+            CTX.textBaseline = 'middle';
+            CTX.fillText(this.emoji, this.x, this.y);
+
+            // Draw HP bar
+            const barWidth = tileSize * 0.8;
+            const barHeight = 5;
+            const barX = this.x - barWidth / 2;
+            const barY = this.y + tileSize / 2 - 10;
+            const hpRatio = this.hp / this.maxHp;
+
+            // Background of HP bar
+            CTX.fillStyle = '#333';
+            CTX.fillRect(barX, barY, barWidth, barHeight);
+            
+            // Current HP (Color changes when low)
+            CTX.fillStyle = hpRatio > 0.3 ? '#4CAF50' : '#F44336';
+            CTX.fillRect(barX, barY, barWidth * hpRatio, barHeight);
+
+            CTX.restore();
+        }
+    }
+
+    class Plant extends Unit {
+        constructor(gridX, gridY, type) {
+            super(
+                gridX * tileSize + tileSize / 2, // Center X
+                gridY * tileSize + tileSize / 2, // Center Y
+                type.hp,
+                type.emoji
+            );
+            this.type = type;
+            this.attackTimer = 0;
+            this.productionTimer = 0;
+            this.isAttacker = type.type === 'attacker';
+            this.isGenerator = type.type === 'generator';
+            this.isDefender = type.type === 'defender';
+            this.isChomper = type.type === 'chomper';
+            
+            // Chomper specific
+            this.isDigesting = false;
+            this.digestTimer = 0;
+        }
+
+        update() {
+            if (this.hp <= 0) return;
+
+            if (this.isGenerator) {
+                this.productionTimer++;
+                if (this.productionTimer >= this.type.productionRate) {
+                    // Sun generation logic (fixes the TypeError: this.generateSun is not a function)
+                    sunDrops.push(new SunDrop(this.x, this.y, 25));
+                    this.productionTimer = 0;
+                }
+            }
+            
+            // Chomper Logic
+            if (this.isChomper) {
+                if (this.isDigesting) {
+                    this.digestTimer--;
+                    if (this.digestTimer <= 0) {
+                        this.isDigesting = false;
+                        this.emoji = this.type.emoji; // Restore emoji
+                    }
+                } else {
+                    // Find a zombie in the current tile or the tile in front
+                    const zombieToChomp = zombies.find(z => 
+                        z.gridY === this.gridY && (z.gridX === this.gridX || z.gridX === this.gridX + 1)
+                    );
+                    if (zombieToChomp) {
+                        this.chomp(zombieToChomp);
+                    }
+                }
+            }
+            
+            // Peashooter/Repeater/Ice Pea Logic
+            if (this.isAttacker) {
+                this.attackTimer++;
+                // Check if there are zombies in this lane
+                const zombiesInLane = zombies.filter(z => z.gridY === this.gridY);
+                if (zombiesInLane.length > 0) {
+                    if (this.attackTimer >= this.type.attackRate) {
+                        this.attack();
+                        this.attackTimer = 0;
+                    }
+                }
+            }
+        }
+        
+        chomp(zombie) {
+            zombie.hp = 0; // Instant kill
+            this.isDigesting = true;
+            this.digestTimer = this.type.digestTime;
+            this.emoji = '😴'; // Change emoji while digesting
+        }
+
+        attack() {
+            const numShots = this.type.numShots || 1; // Default to 1 shot (Peashooter)
+            const isIce = this.type.projectile === 'ice';
+
+            for (let i = 0; i < numShots; i++) {
+                // Offset the projectile start slightly for Repeater's second shot
+                const xOffset = numShots > 1 ? (i % 2 === 0 ? -5 : 5) : 0;
+                projectiles.push(new Projectile(this.x + tileSize/4 + xOffset, this.y, this.gridY, isIce));
+            }
+        }
+    }
+
+    class Zombie extends Unit {
+        constructor(gridY, type) {
+            super(
+                CANVAS.width + tileSize / 2, // Start off-screen right
+                gridY * tileSize + tileSize / 2, // Center Y in lane
+                type.hp,
+                type.emoji
+            );
+            this.type = type;
+            this.baseSpeed = type.speed; // Store base speed
+            this.speed = type.speed; // Current speed
+            this.damage = type.damage;
+            this.attackTimer = 0;
+            this.attackDelay = 60; // Attack once per second (60 frames)
+            this.isEating = false;
+            
+            // Slow status
+            this.slowed = false;
+            this.slowTimer = 0;
+            this.slowDuration = 180; // 3 seconds
+            
+            // Newspaper Zombie specific status
+            this.isNewspaper = type.name === 'Newspaper';
+            this.hasNewspaper = this.isNewspaper;
+            this.paperLostHP = type.paperLostHP; // The HP threshold below which the paper is lost
+            this.enragedSpeed = type.enragedSpeed || type.speed;
+        }
+
+        applySlow() {
+            if (!this.slowed) {
+                this.slowed = true;
+                this.speed = this.baseSpeed * 0.5; // Half speed
+            }
+            // Refresh slow duration
+            this.slowTimer = this.slowDuration;
+        }
+
+        update() {
+            if (this.hp <= 0) return;
+            
+            // --- Newspaper Zombie Enrage Logic ---
+            if (this.isNewspaper && this.hasNewspaper && this.hp <= this.paperLostHP) {
+                this.hasNewspaper = false;
+                this.emoji = '😡🧟'; // Enraged emoji (lost paper)
+                this.baseSpeed = this.enragedSpeed;
+                // Re-calculate current speed based on new base speed and slow status
+                this.speed = this.slowed ? this.enragedSpeed * 0.5 : this.enragedSpeed;
+            }
+
+            // Handle slow status decay
+            if (this.slowed) {
+                this.slowTimer--;
+                if (this.slowTimer <= 0) {
+                    this.slowed = false;
+                    this.speed = this.baseSpeed; // Restore base speed
+                }
+            }
+
+            const plantInFront = plants.find(p => p.gridY === this.gridY && p.gridX === this.gridX);
+
+            if (plantInFront) {
+                // If touching a plant, stop and eat it
+                this.isEating = true;
+                this.attackTimer++;
+                if (this.attackTimer >= this.attackDelay) {
+                    plantInFront.hp -= this.damage;
+                    this.attackTimer = 0;
+                }
+            } else {
+                this.isEating = false;
+                // Move left using current speed (which may be reduced by slow)
+                this.x -= this.speed;
+                this.gridX = Math.floor(this.x / tileSize - 0.5);
+            }
+        }
+    }
+
+    class Projectile {
+        constructor(x, y, gridY, isIce = false) {
+            this.x = x;
+            this.y = y;
+            this.gridY = gridY;
+            this.speed = 5;
+            this.radius = 8;
+            this.damage = 1;
+            this.isIce = isIce; // New property for ice peas
+        }
+
+        update() {
+            this.x += this.speed;
+        }
+
+        draw() {
+            CTX.fillStyle = this.isIce ? '#77ccff' : '#4CAF50'; // Blue for Ice, Green for Pea
+            CTX.beginPath();
+            CTX.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            CTX.fill();
+        }
+    }
+
+    class SunDrop {
+        constructor(x, y, value) {
+            this.x = x + (Math.random() - 0.5) * tileSize; // Random slight offset
+            this.y = y;
+            this.targetY = y + tileSize * 0.8; // Target ground position
+            this.value = value;
+            this.velocityY = 1;
+            this.radius = 20;
+            this.collected = false;
+        }
+
+        update() {
+            if (this.y < this.targetY) {
+                this.y += this.velocityY;
+                this.velocityY += 0.1; // Simple gravity
+            }
+        }
+
+        draw() {
+            CTX.font = `${this.radius * 0.8}px sans-serif`;
+            CTX.textAlign = 'center';
+            CTX.textBaseline = 'middle';
+            CTX.fillText('☀️', this.x, this.y);
+        }
+    }
+
+    // --- Game Logic Functions ---
+
+    function initGame() {
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        CANVAS.addEventListener('click', handleCanvasClick);
+        RESTART_BUTTON.addEventListener('click', resetGame);
+        
+        setupPlantCards();
+        resetGame();
+    }
+
+    function setupPlantCards() {
+        PLANT_SELECTION_DIV.innerHTML = ''; // Clear previous
+        
+        // Add Plant Cards
+        Object.values(UNIT_TYPES).forEach(type => {
+            if (type.cost) {
+                const card = document.createElement('div');
+                card.id = `card-${type.name}`;
+                card.className = 'plant-card';
+                card.onclick = () => selectPlant(type);
+                PLANT_SELECTION_DIV.appendChild(card);
+            }
+        });
+
+        // Add Shovel Tool Card
+        const shovelCard = document.createElement('div');
+        shovelCard.id = `card-${SHOVEL_TOOL.name}`;
+        shovelCard.className = 'tool-card';
+        shovelCard.innerHTML = `${SHOVEL_TOOL.emoji}<br>${SHOVEL_TOOL.name}`;
+        // Select tool uses a different function to handle its state logic
+        shovelCard.onclick = () => selectTool(SHOVEL_TOOL); 
+        PLANT_SELECTION_DIV.appendChild(shovelCard);
+    }
+    
+    function deselectAll() {
+        // Deselect previous plant/tool
+        if (selectedPlantType) {
+            const prevCard = document.getElementById(`card-${selectedPlantType.name}`);
+            if (prevCard) prevCard.classList.remove('selected');
+        }
+        selectedPlantType = null;
+    }
+
+    function selectPlant(type) {
+        if (sun < type.cost) return;
+        if (cooldowns[type.name] > 0) return;
+
+        // Deselect any previous selection (plant or shovel)
+        deselectAll();
+
+        if (selectedPlantType === type) {
+            selectedPlantType = null; // Toggle off
+        } else {
+            selectedPlantType = type; // Toggle on
+            const newCard = document.getElementById(`card-${type.name}`);
+            if (newCard) newCard.classList.add('selected');
+        }
+    }
+    
+    function selectTool(tool) {
+        // Deselect any previous selection (plant or shovel)
+        deselectAll();
+
+        const card = document.getElementById(`card-${tool.name}`);
+
+        if (selectedPlantType === tool) {
+            selectedPlantType = null; // Toggle off
+            card.classList.remove('selected');
+        } else {
+            selectedPlantType = tool; // Toggle on
+            card.classList.add('selected');
+        }
+    }
+
+    function handleCanvasClick(event) {
+        if (isGameOver) return;
+
+        const rect = CANVAS.getBoundingClientRect();
+        const clientX = event.clientX;
+        const clientY = event.clientY;
+
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+
+        const gridX = Math.floor(x / tileSize);
+        const gridY = Math.floor(y / tileSize);
+
+        // 1. Sun Collection (Highest priority)
+        const collectedSunDrops = sunDrops.filter(drop => {
+            const distSq = (drop.x - x) ** 2 + (drop.y - y) ** 2;
+            return distSq < drop.radius ** 2;
+        });
+
+        if (collectedSunDrops.length > 0) {
+            collectedSunDrops.forEach(drop => sun += drop.value);
+            sunDrops = sunDrops.filter(drop => !collectedSunDrops.includes(drop));
+            updateSunDisplay();
+            return; 
+        }
+
+        // 2. Plant Placement / Removal
+        if (selectedPlantType && gridX >= 0 && gridX < COLS && gridY >= 0 && gridY < ROWS) {
+             const existingPlantIndex = plants.findIndex(p => p.gridX === gridX && p.gridY === gridY);
+
+            // --- Shovel Logic ---
+            if (selectedPlantType === SHOVEL_TOOL) {
+                if (existingPlantIndex !== -1) {
+                    plants.splice(existingPlantIndex, 1); // Remove the plant
+                    // Deselect shovel after successful use
+                    selectTool(SHOVEL_TOOL); 
+                }
+                return; // Consumed click for removal attempt
+            }
+            
+            // --- Plant Placement Logic (Existing) ---
+            const cooldownKey = selectedPlantType.name;
+            if (cooldowns[cooldownKey] > 0 || selectedPlantType.type === 'tool') {
+                return; 
+            }
+
+            // Check if grid is empty
+            if (existingPlantIndex === -1) {
+                if (sun >= selectedPlantType.cost) {
+                    sun -= selectedPlantType.cost;
+                    
+                    // SET GLOBAL COOLDOWN
+                    cooldowns[cooldownKey] = selectedPlantType.cooldown;
+                    
+                    plants.push(new Plant(gridX, gridY, selectedPlantType));
+                    updateSunDisplay();
+                    
+                    // Deselect after planting
+                    deselectAll(); 
+                } else {
+                    console.log("Not enough sun!");
+                }
+            } else {
+                console.log("Space occupied!");
+            }
+        }
+    }
+
+    function updateSunDisplay() {
+        SUN_DISPLAY.textContent = sun;
+        
+        // Disable/Enable plant cards based on sun count and cooldown
+        Object.values(UNIT_TYPES).forEach(type => {
+            if (type.cost) {
+                const card = document.getElementById(`card-${type.name}`);
+                const cooldownKey = type.name;
+                const remainingCooldown = cooldowns[cooldownKey] || 0;
+                
+                // Update visual cooldown display
+                let cooldownText = '';
+                if (remainingCooldown > 0) {
+                    // Convert frames to seconds and round up
+                    const seconds = Math.ceil(remainingCooldown / 60);
+                    cooldownText = `<div class="cooldown-overlay">${seconds}s</div>`;
+                }
+
+                card.innerHTML = `${type.emoji}<br>${type.name}<br>(${type.cost}) ☀️ ${cooldownText}`;
+                
+                // Apply disabled state if insufficient sun OR on cooldown
+                const isDisabled = sun < type.cost || remainingCooldown > 0;
+                card.classList.toggle('disabled', isDisabled);
+            }
+        });
+    }
+
+    function spawnZombie() {
+        const randomLane = Math.floor(Math.random() * ROWS);
+        
+        // Choose zombie type based on a weighted random approach (and game progression)
+        let zombieType = UNIT_TYPES.ZOMBIE;
+        const difficultyLevel = zombieSpawnDelay; // Lower delay means higher difficulty (max 300, min 50)
+
+        let roll = Math.random();
+
+        if (difficultyLevel < 250) { 
+            if (roll < 0.05) {
+                zombieType = UNIT_TYPES.FOOTBALL_ZOMBIE; // 5% chance, only after early game
+            } else if (roll < 0.15) {
+                zombieType = UNIT_TYPES.NEWSPAPER_ZOMBIE; // 10% chance
+            } else if (roll < 0.35) {
+                zombieType = UNIT_TYPES.CONEHEAD_ZOMBIE; // 20% chance
+            }
+        }
+        
+        if (difficultyLevel < 150) { // Higher chance for tough zombies later
+            if (roll < 0.1) {
+                zombieType = UNIT_TYPES.FOOTBALL_ZOMBIE; // 10% chance
+            } else if (roll < 0.3) {
+                zombieType = UNIT_TYPES.NEWSPAPER_ZOMBIE; // 20% chance
+            } else if (roll < 0.6) {
+                zombieType = UNIT_TYPES.CONEHEAD_ZOMBIE; // 30% chance
+            }
+        }
+
+        zombies.push(new Zombie(randomLane, zombieType));
+    }
+
+    function handleCollisions() {
+        // Projectile vs Zombie collisions
+        projectiles = projectiles.filter(projectile => {
+            // Projectiles that go off-screen are removed
+            if (projectile.x > CANVAS.width) return false;
+
+            for (let i = 0; i < zombies.length; i++) {
+                const zombie = zombies[i];
+                if (zombie.hp <= 0) continue;
+
+                // Simple circular collision detection
+                const distSq = (projectile.x - zombie.x) ** 2 + (projectile.y - zombie.y) ** 2;
+                if (distSq < (projectile.radius + tileSize * 0.3) ** 2) {
+                    zombie.hp -= projectile.damage;
+                    
+                    // Apply slow effect if hit by Ice Pea
+                    if (projectile.isIce) {
+                        zombie.applySlow();
+                    }
+
+                    return false; // Remove projectile
+                }
+            }
+            return true; // Keep projectile
+        });
+
+        // Cleanup dead units (Chomper kills are handled here too since zombie.hp drops to 0)
+        plants = plants.filter(p => p.hp > 0);
+        zombies = zombies.filter(z => z.hp > 0);
+    }
+
+    function drawGrid() {
+        CTX.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+        CTX.lineWidth = 1;
+        
+        // Draw columns
+        for (let i = 1; i < COLS; i++) {
+            CTX.beginPath();
+            CTX.moveTo(i * tileSize, 0);
+            CTX.lineTo(i * tileSize, CANVAS.height);
+            CTX.stroke();
+        }
+
+        // Draw rows
+        for (let j = 1; j < ROWS; j++) {
+            CTX.beginPath();
+            CTX.moveTo(0, j * tileSize);
+            CTX.lineTo(CANVAS.width, j * tileSize);
+            CTX.stroke();
+        }
+
+        // Highlight the selected tile area and adjust cursor
+        if (selectedPlantType) {
+            CANVAS.style.cursor = selectedPlantType === SHOVEL_TOOL ? 'copy' : 'crosshair';
+        } else {
+             CANVAS.style.cursor = 'default';
+        }
+    }
+
+    function checkWinLoss() {
+        // Loss condition: Zombie reaches the end of the lawn (x < tileSize / 2, or gridX < 1)
+        const zombieReachedEnd = zombies.some(z => z.x < tileSize / 2);
+        if (zombieReachedEnd) {
+            showMessage("Game Over! The Zombies ate your brain!", true);
+            return;
+        }
+
+        // Simple Win condition: Survive a set number of waves (implemented via reducing spawn delay)
+        // Since the lawn is longer, surviving until spawn delay is 50 should be a solid win condition.
+        if (zombieSpawnDelay <= 50 && zombies.length === 0) {
+            showMessage("You survived the onslaught! You win!", true);
+            return;
+        }
+    }
+
+    // --- Main Game Loop ---
+
+    function gameLoop() {
+        if (isGameOver) return;
+        
+        CTX.clearRect(0, 0, CANVAS.width, CANVAS.height);
+
+        // 1. Global Cooldown Decrement
+        Object.keys(cooldowns).forEach(key => {
+            if (cooldowns[key] > 0) {
+                cooldowns[key]--;
+            }
+        });
+        
+        // 2. Draw Grid
+        drawGrid();
+        
+        // 3. Update and Draw Sun Drops
+        sunDrops.forEach(drop => drop.update());
+        sunDrops.forEach(drop => drop.draw());
+        
+        // 4. Update and Draw Plants
+        plants.forEach(plant => plant.update());
+        plants.forEach(plant => plant.draw());
+
+        // 5. Update and Draw Zombies
+        zombies.forEach(zombie => zombie.update());
+        zombies.forEach(zombie => zombie.draw());
+
+        // 6. Update and Draw Projectiles
+        projectiles.forEach(projectile => projectile.update());
+        projectiles.forEach(projectile => projectile.draw());
+        
+        // 7. Handle collisions
+        handleCollisions();
+
+        // 8. Auto Sun Generation (Passive Income - 25 Sun every ~8.3 seconds)
+        sunGenerationTimer++;
+        if (sunGenerationTimer >= SUN_GENERATION_INTERVAL) {
+            sun += 25;
+            sunGenerationTimer = 0;
+        }
+        updateSunDisplay(); // Call here to update sun/cooldown visuals once per frame
+
+        // 9. Zombie Spawning Logic (Increase Difficulty)
+        zombieSpawnTimer++;
+        if (zombieSpawnTimer >= zombieSpawnDelay) {
+            spawnZombie();
+            zombieSpawnTimer = 0;
+            // Gradually reduce spawn delay to increase difficulty
+            if (zombieSpawnDelay > 50) {
+                zombieSpawnDelay -= 5;
+            }
+        }
+
+        // 10. Check Game State
+        checkWinLoss();
+    }
+
+    function resetGame() {
+        // Reset state
+        sun = 50;
+        plants = [];
+        zombies = [];
+        projectiles = [];
+        sunDrops = [];
+        selectedPlantType = null;
+        cooldowns = {}; // Reset cooldowns
+        sunGenerationTimer = 0;
+        zombieSpawnTimer = 0;
+        zombieSpawnDelay = 300;
+        isGameOver = false;
+
+        // Reset UI
+        MESSAGES_DIV.style.display = 'none';
+        
+        // Clear selection visual
+        document.querySelectorAll('.plant-card, .tool-card').forEach(card => card.classList.remove('selected'));
+
+        // Start the game loop
+        clearInterval(gameLoopInterval);
+        gameLoopInterval = setInterval(gameLoop, 1000 / 60); // 60 FPS
+        updateSunDisplay(); // Initial display update
+    }
+
+    // Initialize the game when the page loads
+    window.onload = initGame;
+</script>
+
+</body>
+</html>
+
+
