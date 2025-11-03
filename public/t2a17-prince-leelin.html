@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dot Crown Animation</title>
+  <style>
+    body {
+      background-color: #111;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .dot {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background-color: gold;
+      border-radius: 50%;
+      box-shadow: 0 0 15px gold;
+    }
+  </style>
+</head>
+<body>
+  <div class="dot" id="dot"></div>
+
+  <script>
+    const dot = document.getElementById("dot");
+    const amplitude = 100; // height of the peaks
+    const frequency = 4;   // number of "crowns" across the width
+    const speed = 0.01;    // animation speed
+    let t = 0;
+
+    function animate() {
+      const width = window.innerWidth;
+      const x = (t * 200) % width; // move dot horizontally
+      const y = window.innerHeight / 2 - 
+                Math.abs(Math.sin((x / width) * frequency * Math.PI * 2)) * amplitude;
+
+      dot.style.left = `${x}px`;
+      dot.style.top = `${y}px`;
+
+      t += speed;
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  </script>
+</body>
+</html>
