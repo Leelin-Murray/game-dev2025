@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wasteland Protocol</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom retro font and terminal aesthetic */
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+        :root {
+            --terminal-bg: #0d1a0d;
+            --terminal-fg: #00ff00;
+            --terminal-item: #ffcc00; /* Yellow for items */
+            --xp-color: #ffcc00; /* Yellow for XP */
+            --rad-color: #ff3333; /* Red for Radiation */
+        }
+        body {
+            font-family: 'VT323', monospace;
+            background-color: #000;
+            color: var(--terminal-fg);
+            text-shadow: 0 0 5px var(--terminal-fg);
+            line-height: 1.25;
+            min-height: 100vh;
+        }
+        .terminal-screen {
+            background-color: var(--terminal-bg);
+            border: 2px solid var(--terminal-fg);
+            box-shadow: 0 0 10px var(--terminal-fg);
+            padding: 1rem;
+            margin: 1rem;
+            border-radius: 8px;
+        }
+        .log-entry {
+            border-bottom: 1px dotted rgba(0, 255, 0, 0.2);
+            padding-bottom: 4px;
+            margin-bottom: 4px;
+        }
+        button {
+            transition: all 0.1s ease;
+            box-shadow: 0 0 3px var(--terminal-fg);
+            border: 1px solid var(--terminal-fg);
+        }
+        button:hover:not(:disabled) {
+            background-color: var(--terminal-fg);
+            color: var(--terminal-bg);
+            transform: scale(1.05);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .gemini-text {
+            color: #00ffff; /* Brighter aqua for generated content */
+            text-shadow: 0 0 4px #00ffff;
+        }
+        .item-text {
+            color: var(--terminal-item);
+            font-weight: bold;
+        }
+        .stat-bar {
+            background-color: rgba(0, 255, 0, 0.1);
+            border: 1px solid var(--terminal-fg);
+            height: 10px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .stat-fill {
+            background-color: var(--terminal-fg);
+            height: 100%;
+        }
+        .xp-bar {
+            background-color: rgba(255, 204, 0, 0.1);
+            border: 1px solid var(--xp-color);
+            height: 10px;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 4px; 
+        }
+        .xp-fill {
+            background-color: var(--xp-color);
+            height: 100%;
+        }
+        .rad-text {
+            color: var(--rad-color);
+            font-weight: bold;
+            text-shadow: 0 0 5px var(--rad-color);
+        }
+    </style>
+    
+    <!-- Firebase Imports -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // Expose Firebase functions globally for use in the main script block
+        window.initializeApp = initializeApp;
+        window.getAuth = getAuth;
+        window.signInAnonymously = signInAnonymously;
+        window.signInWithCustomToken = signInWithCustomToken;
+        window.getFirestore = getFirestore;
+        window.doc = doc;
+        window.getDoc = getDoc;
+        window.setDoc = setDoc;
+        window.setLogLevel = setLogLevel;
+    </script>
+    
+    <script>
+        // Global Firebase instances (initialized in firebaseSetup)
+        let app;
+        let db;
+        let auth;
+        let userId; 
+        
+        // --- Game State Variables ---
+        const API_KEY = ""; // Using empty key for Canvas environment
+        const API_URL_BASE = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent";
+
+        // Item Data: id must be unique
+        const LOOT_ITEMS = [
+            // Weapons
+            { id: 1, name: "Rusty Pipe", type: "weapon", damageBonus: 5, statBonus: { s: 1 } },
+            { id: 2, name: "Hunting Rifle", type: "weapon", damageBonus: 15, statBonus: { p: 2 } },
+            { id: 3, name: "Combat Knife", type: "weapon", damageBonus: 8, statBonus: { a: 1 } },
+            
+            // Armor - Head
+            { id: 9, name: "Welding Goggles", type: "head", defenseBonus: 1, statBonus: { p: 1 } },
+            { id: 10, name: "Steel Helmet", type: "head", defenseBonus: 3, statBonus: { e: 1 } },
+
+            // Armor - Face
+            { id: 11, name: "Gas Mask", type: "face", defenseBonus: 1, statBonus: { e: 1, l: -1 } },
+            
+            // Armor - Torso
+            { id: 4, name: "Leather Vest", type: "torso", defenseBonus: 2, statBonus: { e: 1 } },
+            { id: 5, name: "Raider Chestplate", type: "torso", defenseBonus: 5, statBonus: { s: 1, e: 2 } },
+            
+            // Armor - Legs
+            { id: 12, name: "Worn Jeans", type: "legs", defenseBonus: 0, statBonus: { } },
+            { id: 13, name: "Hardened Greaves", type: "legs", defenseBonus: 4, statBonus: { s: 1 } },
+
+            // --- POWER ARMOR SUITS (Rare Loot) ---
+            { id: 8, name: "T-45 Power Armor", type: "torso", isPowerArmor: true, defenseBonus: 25, statBonus: { s: 5, e: 5, a: -2 }, description: "Massive defense, but clunky and slows you down." }, 
+            { id: 14, name: "T-51 Power Armor", type: "torso", isPowerArmor: true, defenseBonus: 35, statBonus: { s: 7, e: 7, a: -1 }, description: "An advanced suit with superior protection." }, 
+            { id: 15, name: "T-60 Power Armor", type: "torso", isPowerArmor: true, defenseBonus: 45, statBonus: { s: 8, e: 8, i: 1 }, description: "Military standard, perfectly balanced between offense and defense." }, 
+            { id: 16, name: "X-01 Power Armor (Enclave)", type: "torso", isPowerArmor: true, defenseBonus: 60, statBonus: { s: 10, e: 10, l: 2 }, description: "The pinnacle of pre-war armored warfare. Intimidating and powerful." },
+            // -------------------------------------
+
+            // Consumables (NEW)
+            { id: 17, name: "Radaway", type: "consumable", effect: "radcure", description: "Cures 10 points of Radiation Sickness." },
+            { id: 18, name: "Stimpak", type: "consumable", effect: "heal", healAmount: 25, description: "Instantly restores 25 HP." },
+
+            // Trinkets
+            { id: 6, name: "Lucky Rabbit's Foot", type: "trinket", statBonus: { l: 2 } },
+            { id: 7, name: "Hacker's Chip", type: "trinket", statBonus: { i: 1 } }
+        ];
+
+        let gameState = {
+            s: 5, // Strength
+            p: 5, // Perception
+            e: 5, // Endurance
+            c: 5, // Charisma
+            i: 5, // Intelligence
+            a: 5, // Agility
+            l: 5, // Luck
+
+            hp: 100,
+            maxHp: 100,
+            xp: 0,
+            level: 1,
+            skillPoints: 5,
+            location: "The Vault Exit",
+            log: [],
+            isCombat: false,
+            enemy: null,
+            loading: false,
+            isAuthReady: false, 
+            
+            radiation: 0, // NEW: Radiation Sickness level
+
+            inventory: [],
+            equipped: {
+                weapon: null,
+                head: null,
+                face: null,
+                torso: null,
+                legs: null,
+                trinket: null
+            },
+        };
+
+        const ENCOUNTERS = [
+            { type: 'skill', stat: 'P', name: 'Scavenge for Supplies' },
+            { type: 'skill', stat: 'I', name: 'Hack a Rusty Terminal' },
+            { type: 'skill', stat: 'C', name: 'Negotiate with a Scrapper' },
+            { type: 'skill', stat: 'A', name: 'Maneuver through Rubble' },
+            { type: 'skill', stat: 'L', name: 'Find a Strange Object' },
+            { type: 'combat', name: 'Hostile Mutated Rat' },
+            { type: 'combat', name: 'Bandit Ambush' },
+            { type: 'rad_skill', stat: 'E', name: 'Scout a Highly Irradiated Area' }, // NEW RADIATION EVENT
+        ];
+        
+        const STAT_DESCRIPTIONS = {
+            'S (Strength)': 'Increases your **damage dealt** in combat and is used for checks requiring raw physical power.',
+            'P (Perception)': 'Used for checks involving awareness, senses, and noticing details, like **Scavenging for Supplies**.',
+            'E (Endurance)': 'Provides passive **damage reduction** against enemy attacks and allows for minor HP recovery on success checks. Crucial for **resisting Radiation**.',
+            'C (Charisma)': 'Used for social encounters and attempts to **Negotiate** or talk your way out of sticky situations.',
+            'I (Intelligence)': 'Used for technical tasks like **Hacking** and checks involving knowledge. Successful checks grant bonus XP.',
+            'A (Agility)': 'Significantly improves your **To-Hit Chance** in combat and determines your success when trying to **Flee**.',
+            'L (Luck)': 'Adds a small bonus to **ALL** Skill Checks and influences random, fate-based events.',
+        };
+
+        // --- Core Game Calculations ---
+        
+        /**
+         * Calculates the dynamic maximum HP based on level and radiation.
+         */
+        function calculateMaxHp() {
+            const baseMax = 100 + (gameState.level - 1) * 10;
+            const radPenalty = gameState.radiation * 2; // 1 Rad reduces Max HP by 2
+            return Math.max(1, baseMax - radPenalty); // Ensure max HP doesn't drop below 1
+        }
+        
+        /**
+         * Applies radiation and its health penalty.
+         */
+        function applyRadiation(amount) {
+            gameState.radiation += amount;
+            gameState.maxHp = calculateMaxHp(); // Update max HP
+            gameState.hp = Math.min(gameState.hp, gameState.maxHp); // Clamp current HP
+            addToLog(`DANGER: You absorbed ${amount} Rads! Max HP reduced to ${gameState.maxHp}. <span class="rad-text">USE RADAWAY!</span>`, false);
+        }
+
+        // --- Firebase/Save/Load Functions ---
+
+        /**
+         * Initializes Firebase and authenticates the user.
+         */
+        async function firebaseSetup() {
+            // Check if Firebase functions are globally available from the module script
+            if (typeof initializeApp === 'undefined') {
+                console.error("Firebase module imports failed.");
+                gameState.isAuthReady = true;
+                initialSetup();
+                renderUI();
+                return;
+            }
+            
+            try {
+                const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+
+                if (!firebaseConfig) {
+                    console.error("Firebase config is missing. Cannot save/load.");
+                    gameState.isAuthReady = true;
+                    addToLog("WARNING: Save/Load disabled (Firebase config missing). Starting New Game.", false);
+                    initialSetup();
+                    renderUI();
+                    return;
+                }
+
+                // 1. Initialize Firebase
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                setLogLevel('Debug'); 
+
+                // 2. Authenticate
+                const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                // 3. Set User ID and Readiness
+                userId = auth.currentUser?.uid || crypto.randomUUID();
+                gameState.isAuthReady = true;
+
+                addToLog("Connection established to Wasteland Archive. Save/Load functions ready.", false);
+                await loadProgress(); // Attempt to load after successful auth
+
+            } catch (error) {
+                console.error("Firebase Initialization or Auth Failed:", error);
+                gameState.isAuthReady = true; 
+                addToLog("CRITICAL ERROR: Failed to access Wasteland Archive. Starting New Game.", false);
+                initialSetup();
+                renderUI();
+            }
+        }
+
+        /**
+         * Saves the current game state to Firestore.
+         */
+        async function saveProgress() {
+            if (!gameState.isAuthReady || !db || !userId) {
+                addToLog("ERROR: Cannot save. Archive connection not ready.", false);
+                return;
+            }
+
+            gameState.loading = true;
+            renderUI();
+            
+            try {
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                // Private user document path
+                const docRef = doc(db, `/artifacts/${appId}/users/${userId}/game_data/save_slot_1`); 
+
+                // Prepare a savable version of gameState (excluding transient/non-serializable parts)
+                const savableState = { ...gameState };
+                delete savableState.enemy;
+                delete savableState.loading;
+                delete savableState.isCombat;
+                delete savableState.log;
+                delete savableState.isAuthReady;
+                
+                await setDoc(docRef, savableState);
+
+                addToLog("--- SAVE COMPLETE --- Progress archived successfully.", false);
+            } catch (error) {
+                console.error("Save failed:", error);
+                addToLog("ERROR: Failed to save progress to the Wasteland Archive.", false);
+            } finally {
+                gameState.loading = false;
+                renderUI();
+            }
+        }
+
+        /**
+         * Loads the game state from Firestore if a save exists.
+         */
+        async function loadProgress() {
+            if (!gameState.isAuthReady || !db || !userId) { return; }
+
+            gameState.loading = true;
+            renderUI();
+
+            try {
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const docRef = doc(db, `/artifacts/${appId}/users/${userId}/game_data/save_slot_1`);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const loadedData = docSnap.data();
+                    
+                    // Merge loaded data into gameState
+                    Object.assign(gameState, loadedData); 
+                    
+                    // Cleanup and recalculate transient states
+                    gameState.maxHp = calculateMaxHp(); // Recalculate max HP based on loaded radiation
+                    gameState.hp = Math.min(gameState.hp, gameState.maxHp);
+                    gameState.isCombat = false;
+                    gameState.enemy = null;
+                    gameState.log = []; 
+                    gameState.isAuthReady = true; 
+
+                    addToLog("--- LOAD COMPLETE --- Progress recovered from the Wasteland Archive.", false);
+                    addToLog(`Welcome back, Traveler. Current Level: ${gameState.level} in ${gameState.location}.`, false);
+                } else {
+                    addToLog("No previous archive found. Starting a New Game...", false);
+                    initialSetup();
+                }
+            } catch (error) {
+                console.error("Load failed:", error);
+                addToLog("ERROR: Failed to load progress from the Wasteland Archive. Starting New Game.", false);
+                initialSetup();
+            } finally {
+                gameState.loading = false;
+                renderUI();
+            }
+        }
+
+        /**
+         * Sets up the initial game state (for new games).
+         */
+        function initialSetup() {
+            // Initial items set: Pipe (Weapon), Vest (Torso), Worn Jeans (Legs)
+            gameState.inventory.push({ ...LOOT_ITEMS.find(item => item.id === 1) });
+            gameState.inventory.push({ ...LOOT_ITEMS.find(item => item.id === 4) });
+            gameState.inventory.push({ ...LOOT_ITEMS.find(item => item.id === 12) });
+            
+            // New starting consumables (Radaway and Stimpak)
+            gameState.inventory.push({ ...LOOT_ITEMS.find(item => item.id === 17) }); 
+            gameState.inventory.push({ ...LOOT_ITEMS.find(item => item.id === 18) }); 
+            
+            // Set initial log message for a new game
+            addToLog("Initializing Wasteland Protocol V4.3. Radiation Sickness Added.", false);
+            addToLog("You start with basic gear and essential consumables (**Stimpak** and **Radaway**).", false);
+        }
+
+        // --- Utility Functions (Stat and Equipment Calculation) ---
+
+        /**
+         * Calculates the effective S.P.E.C.I.A.L. stat including equipment bonuses.
+         */
+        function getEffectiveStat(statKey) {
+            let effectiveValue = gameState[statKey];
+
+            for (const slot in gameState.equipped) {
+                const item = gameState.equipped[slot];
+                if (item && item.statBonus && item.statBonus[statKey]) {
+                    if (item.isPowerArmor && slot !== 'torso') {
+                        continue;
+                    }
+                    effectiveValue += item.statBonus[statKey];
+                }
+            }
+            return effectiveValue;
+        }
+
+        /**
+         * Calculates the total damage bonus from equipped weapon.
+         */
+        function getWeaponDamageBonus() {
+            return gameState.equipped.weapon ? gameState.equipped.weapon.damageBonus || 0 : 0;
+        }
+
+        /**
+         * Calculates the total defense bonus from all equipped armor pieces (Head, Face, Torso, Legs).
+         */
+        function getArmorDefenseBonus() {
+            let defense = 0;
+            const armorSlots = ['head', 'face', 'torso', 'legs'];
+            let powerArmorDefenseAdded = false;
+
+            for (const slot of armorSlots) {
+                const item = gameState.equipped[slot];
+                if (item && item.defenseBonus) {
+                    if (item.isPowerArmor) {
+                        if (!powerArmorDefenseAdded) {
+                            defense += item.defenseBonus;
+                            powerArmorDefenseAdded = true;
+                        }
+                    } else {
+                        defense += item.defenseBonus;
+                    }
+                }
+            }
+            return defense;
+        }
+
+        /**
+         * Fetches content from the Gemini API with exponential backoff.
+         */
+        async function fetchWithBackoff(url, options, maxRetries = 5) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.status === 429 && i < maxRetries - 1) {
+                        const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        continue;
+                    }
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response;
+                } catch (error) {
+                    console.error(`Fetch attempt ${i + 1} failed:`, error);
+                    if (i === maxRetries - 1) throw error;
+                    const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+        }
+
+        /**
+         * Generates text content using the Gemini API based on a query.
+         */
+        async function generateContentWithGemini(userQuery, systemPrompt) {
+            const url = `${API_URL_BASE}?key=${API_KEY}`;
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+
+            try {
+                const response = await fetchWithBackoff(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text || "The signal is jammed. Nothing was generated.";
+                return text;
+
+            } catch (error) {
+                console.error("Gemini API call failed:", error);
+                return "The wasteland radio crackles static. Connection lost. (API Error)";
+            }
+        }
+
+        // --- Game UI Rendering ---
+
+        /**
+         * Adds a message to the game log.
+         */
+        function addToLog(message, isGemini = false) {
+            const logElement = document.getElementById('message-log');
+            const newEntry = document.createElement('div');
+            newEntry.classList.add('log-entry');
+            if (isGemini) {
+                newEntry.classList.add('gemini-text');
+            }
+            newEntry.innerHTML = message;
+            logElement.appendChild(newEntry);
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        /**
+         * Displays the stat descriptions in the log.
+         */
+        function showStatInfo() {
+            addToLog("--- S.P.E.C.I.A.L. PROTOCOL INFO ---");
+            let infoHtml = '';
+            for (const [stat, description] of Object.entries(STAT_DESCRIPTIONS)) {
+                const statKey = stat.split('(')[1].charAt(0).toLowerCase();
+                const effectiveValue = getEffectiveStat(statKey);
+                const baseValue = gameState[statKey];
+                const bonus = effectiveValue - baseValue;
+                
+                let bonusDisplay = '';
+                if (bonus > 0) {
+                    bonusDisplay = `<span class="text-yellow-500">(+${bonus} from gear)</span>`;
+                } else if (bonus < 0) {
+                    bonusDisplay = `<span class="text-red-500">(${bonus} from gear)</span>`;
+                }
+
+                infoHtml += `<div class="font-bold text-lg text-green-400 mt-2">${stat} [Effective: ${effectiveValue}] ${bonusDisplay}:</div><div class="ml-4">${description}</div>`;
+            }
+
+            const totalDefense = getArmorDefenseBonus();
+            const weaponBonus = getWeaponDamageBonus();
+            infoHtml += `<div class="font-bold text-lg text-green-400 mt-4">COMBAT BONUSES:</div>`;
+            infoHtml += `<div class="ml-4">Total Weapon Damage Bonus: <span class="text-yellow-500">+${weaponBonus}</span></div>`;
+            infoHtml += `<div class="ml-4">Total Armor Defense Bonus: <span class="text-yellow-500">+${totalDefense}</span></div>`;
+
+            addToLog(infoHtml);
+            addToLog("--- END OF INFO ---");
+        }
+
+
+        /**
+         * Renders the current game state to the UI.
+         */
+        function renderUI() {
+            // 1. Calculate Dynamic Max HP and clamp HP
+            gameState.maxHp = calculateMaxHp(); 
+            gameState.hp = Math.min(gameState.hp, gameState.maxHp); 
+            
+            document.getElementById('stat-S').textContent = getEffectiveStat('s');
+            document.getElementById('stat-P').textContent = getEffectiveStat('p');
+            document.getElementById('stat-E').textContent = getEffectiveStat('e');
+            document.getElementById('stat-C').textContent = getEffectiveStat('c');
+            document.getElementById('stat-I').textContent = getEffectiveStat('i');
+            document.getElementById('stat-A').textContent = getEffectiveStat('a');
+            document.getElementById('stat-L').textContent = getEffectiveStat('l');
+            document.getElementById('player-level').textContent = gameState.level;
+            document.getElementById('player-location').textContent = gameState.location;
+            document.getElementById('user-id-display').textContent = userId ? `USER: ${userId.substring(0, 8)}...` : 'User ID Loading...';
+            
+            // HP Bar update
+            document.getElementById('hp-text').textContent = `${Math.floor(gameState.hp)} / ${gameState.maxHp}`;
+            const hpPercent = (gameState.hp / gameState.maxHp) * 100;
+            document.getElementById('hp-fill').style.width = `${hpPercent}%`;
+            
+            // XP Bar update
+            const xpToNextLevel = gameState.level * 100;
+            const xpProgress = Math.min(gameState.xp, xpToNextLevel);
+            const xpPercent = (xpProgress / xpToNextLevel) * 100;
+            document.getElementById('xp-fill').style.width = `${xpPercent}%`;
+            document.getElementById('xp-text').textContent = `${xpProgress} / ${xpToNextLevel}`;
+            
+            // Radiation Update (NEW)
+            document.getElementById('radiation-display').textContent = gameState.radiation;
+            
+            // Flash red if radiation is high
+            const radElement = document.getElementById('rad-container');
+            if (gameState.radiation > 0) {
+                radElement.classList.add('animate-pulse');
+            } else {
+                radElement.classList.remove('animate-pulse');
+            }
+
+
+            const actionContainer = document.getElementById('action-container');
+            actionContainer.innerHTML = '';
+            
+            // Render equipment and inventory
+            renderEquipment();
+            renderInventory();
+            
+            // Handle Loading State
+            if (gameState.loading) {
+                actionContainer.innerHTML = '<div class="text-xl text-center p-8">...Analyzing data streams...</div>';
+                document.querySelectorAll('button').forEach(btn => btn.disabled = true);
+                return;
+            } else {
+                 // Re-enable all buttons when loading is false
+                 document.querySelectorAll('button').forEach(btn => btn.disabled = false);
+            }
+
+            // Handle Combat vs. Exploration
+            if (gameState.isCombat) {
+                renderCombatActions(actionContainer);
+            } else {
+                renderExplorationActions(actionContainer);
+            }
+
+            // Handle Level Up
+            const skillPointDisplay = document.getElementById('skill-points-display');
+            if (gameState.skillPoints > 0) {
+                skillPointDisplay.innerHTML = `<span class="bg-yellow-800 text-black px-2 py-1 rounded">LEVEL UP! Points: ${gameState.skillPoints}</span>`;
+                renderLevelUpUI();
+            } else {
+                skillPointDisplay.innerHTML = '';
+            }
+
+            // Check for Game Over
+            if (gameState.hp <= 0) {
+                renderGameOver();
+            }
+        }
+
+        /**
+         * Renders the equipped gear section.
+         */
+        function renderEquipment() {
+            const container = document.getElementById('equipped-container');
+            // Updated slots order
+            const slots = ['weapon', 'head', 'face', 'torso', 'legs', 'trinket']; 
+            const armorSlots = ['head', 'face', 'torso', 'legs'];
+            let html = '';
+            
+            for (const slot of slots) { 
+                const item = gameState.equipped[slot];
+                
+                let itemName = item ? item.name : `[Empty]`;
+                let itemClass = item ? 'item-text' : 'text-gray-500';
+
+                // Logic for Power Armor slots
+                if (item && item.isPowerArmor && armorSlots.includes(slot) && slot !== 'torso') {
+                    itemName = item.name + ' (Occupied)';
+                    itemClass = 'item-text text-yellow-600';
+                }
+
+                let itemActions = '';
+                // Only show UNEQUIP button on Weapon, Torso, and Trinket slots 
+                if (item && (slot === 'weapon' || slot === 'torso' || slot === 'trinket')) { 
+                    itemActions = `<button onclick="handleUnequip('${slot}')" class="text-xs px-2 py-1 bg-red-800 rounded-full hover:bg-red-600">UNEP</button>`;
+                } else if (item && (slot === 'head' || slot === 'face' || slot === 'legs') && !item.isPowerArmor) {
+                    itemActions = `<button onclick="handleUnequip('${slot}')" class="text-xs px-2 py-1 bg-red-800 rounded-full hover:bg-red-600">UNEP</button>`;
+                }
+
+                html += `
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="font-bold uppercase">${slot}:</span>
+                        <span class="${itemClass} text-right">${itemName}</span>
+                        ${itemActions}
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        /**
+         * Renders the inventory list.
+         */
+        function renderInventory() {
+            const container = document.getElementById('inventory-list');
+            if (gameState.inventory.length === 0) {
+                container.innerHTML = '<div class="text-gray-500 text-sm">Inventory is empty. Find gear to equip!</div>';
+                return;
+            }
+            
+            let html = '';
+            gameState.inventory.forEach((item, index) => {
+                const bonuses = [];
+                if (item.damageBonus) bonuses.push(`DMG+${item.damageBonus}`);
+                if (item.defenseBonus) bonuses.push(`DEF+${item.defenseBonus}`);
+                if (item.healAmount) bonuses.push(`HEAL+${item.healAmount}`); // For Stimpak
+                if (item.effect === 'radcure') bonuses.push(`RAD-10`); // For Radaway
+                
+                for (const stat in item.statBonus) {
+                    bonuses.push(`${stat.toUpperCase()}${item.statBonus[stat] > 0 ? '+' : ''}${item.statBonus[stat]}`);
+                }
+                const bonusText = bonuses.length > 0 ? `(${bonuses.join(', ')})` : '';
+
+                const isPowerArmor = item.isPowerArmor ? ' | **POWER ARMOR**' : '';
+                const isConsumable = item.type === 'consumable';
+                
+                let actionButton = '';
+                if (isConsumable) {
+                    actionButton = `<button onclick="handleConsumable(${index})" class="text-xs px-2 py-1 bg-blue-700 rounded-full hover:bg-blue-500">USE</button>`;
+                } else {
+                    actionButton = `<button onclick="handleEquip(${index})" class="text-xs px-2 py-1 bg-green-700 rounded-full hover:bg-green-500">EQUIP</button>`;
+                }
+
+                html += `
+                    <div class="flex items-center justify-between py-1 border-b border-green-700/30 last:border-b-0">
+                        <span class="item-text text-sm">${item.name} <span class="text-gray-400 text-xs">| ${item.type.toUpperCase()}${isPowerArmor}</span></span>
+                        <div class="text-xs flex gap-2 items-center">
+                            <span class="text-green-500">${bonusText}</span>
+                            ${actionButton}
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        /**
+         * Handles consumption of consumable items (Radaway, Stimpak).
+         */
+        window.handleConsumable = function(inventoryIndex) {
+            const item = gameState.inventory[inventoryIndex];
+            if (!item || item.type !== 'consumable') return;
+            
+            if (item.effect === 'radcure') {
+                if (gameState.radiation === 0) {
+                    addToLog(`You feel fine. No need to waste the **Radaway**.`, false);
+                    return;
+                }
+                const radCured = 10;
+                gameState.radiation = Math.max(0, gameState.radiation - radCured);
+                
+                // Recalculate max HP immediately
+                gameState.maxHp = calculateMaxHp();
+                gameState.hp = Math.min(gameState.hp, gameState.maxHp); 
+                
+                gameState.inventory.splice(inventoryIndex, 1);
+                addToLog(`You injected a **Radaway**. Radiation reduced by ${radCured}. Max HP restored!`, false);
+
+            } else if (item.effect === 'heal') {
+                if (gameState.hp === gameState.maxHp) {
+                    addToLog(`Your HP is already full (${gameState.maxHp}). Save the **Stimpak** for later.`, false);
+                    return;
+                }
+                const heal = item.healAmount;
+                gameState.hp = Math.min(gameState.maxHp, gameState.hp + heal);
+                gameState.inventory.splice(inventoryIndex, 1);
+                addToLog(`You used a **Stimpak**. Restored ${heal} HP.`, false);
+            }
+            
+            renderUI();
+        }
+
+        /**
+         * Renders actions when the player is exploring.
+         */
+        function renderExplorationActions(container) {
+            container.innerHTML = `
+                <button onclick="handleExplore()" class="p-3 w-full sm:w-1/2 md:w-1/5 rounded bg-green-900 hover:text-black">Explore (Risk Encounter)</button>
+                <button onclick="saveProgress()" class="p-3 w-full sm:w-1/2 md:w-1/5 rounded bg-yellow-900 hover:text-black">Archive Progress</button>
+                <button onclick="handleHeal()" class="p-3 w-full sm:w-1/2 md:w-1/5 rounded bg-blue-900 hover:text-black">Rest & Heal</button>
+                <button onclick="handleMoveLocation()" class="p-3 w-full sm:w-1/2 md:w-1/5 rounded bg-gray-700 hover:text-black">Move Location</button>
+                <button onclick="showStatInfo()" class="p-3 w-full sm:w-1/2 md:w-1/5 rounded bg-yellow-800 text-black hover:text-white">PROTOCOL INFO</button>
+            `;
+        }
+
+        /**
+         * Renders actions when the player is in combat.
+         */
+        function renderCombatActions(container) {
+            const effectiveDamage = getEffectiveStat('s') * 2 + getWeaponDamageBonus();
+            container.innerHTML = `
+                <div class="text-xl mb-4">COMBAT: Fighting ${gameState.enemy.name} (HP: ${Math.floor(gameState.enemy.hp)})</div>
+                <button onclick="handleAttack()" class="p-3 w-full sm:w-1/2 md:w-1/3 rounded bg-red-900 hover:text-black">ATTACK (Damage: ~${effectiveDamage} + roll)</button>
+                <button onclick="handleFlee()" class="p-3 w-full sm:w-1/2 md:w-1/3 rounded bg-yellow-900 hover:text-black">FLEE (Agility/Luck)</button>
+            `;
+        }
+
+        /**
+         * Renders the UI for allocating skill points.
+         */
+        function renderLevelUpUI() {
+            const container = document.getElementById('stat-allocation-container');
+            if (gameState.skillPoints > 0) {
+                container.classList.remove('hidden');
+            } else {
+                container.classList.add('hidden');
+            }
+        }
+
+        // --- Rest of Game Logic ---
+
+        /**
+         * Handles the 'Explore' action, initiating a random encounter.
+         */
+        async function handleExplore() {
+            if (gameState.loading) return;
+            gameState.loading = true;
+            renderUI();
+
+            addToLog("--- You venture further into the irradiated ruins. ---");
+            
+            const encounterIndex = Math.floor(Math.random() * ENCOUNTERS.length);
+            const encounter = ENCOUNTERS[encounterIndex];
+
+            addToLog(`ENCOUNTER: ${encounter.name}`, false);
+
+            if (encounter.type === 'combat') {
+                enterCombat(encounter.name);
+            } else if (encounter.type === 'skill') {
+                await handleSkillCheck(encounter.stat, encounter.name, 'skill');
+            } else if (encounter.type === 'rad_skill') {
+                 await handleSkillCheck(encounter.stat, encounter.name, 'rad_skill');
+            }
+
+            gameState.loading = false;
+            renderUI();
+        }
+
+        /**
+         * Handles the 'Rest & Heal' action.
+         */
+        function handleHeal() {
+            if (gameState.hp < gameState.maxHp) {
+                const healAmount = gameState.maxHp * 0.25; 
+                gameState.hp = Math.min(gameState.maxHp, gameState.hp + healAmount);
+                addToLog("You find a safe spot to rest. HP recovered slightly.", false);
+            } else {
+                addToLog("Your HP is already full. No need to rest yet.", false);
+            }
+            renderUI();
+        }
+        
+        /**
+         * Handles the 'Move Location' action.
+         */
+        async function handleMoveLocation() {
+            if (gameState.loading) return;
+            gameState.loading = true;
+            renderUI();
+
+            const locationQuery = "Generate a new, memorable, post-apocalyptic location name (e.g., 'The Glow', 'Junktown') and a one-sentence description.";
+            const locationSystem = "Act as a retro-futuristic location generator. Only output the location name and description.";
+
+            const result = await generateContentWithGemini(locationQuery, locationSystem);
+            
+            const lines = result.split('\n').filter(line => line.trim() !== '');
+            const newLocation = lines[0] || "A new, unmarked patch of wasteland.";
+
+            gameState.location = newLocation.replace(/\*\*/g, '').trim(); 
+            addToLog(`You travel across the scorched earth. New Location: ${gameState.location}`, false);
+            gameState.hp -= 5; 
+            if (gameState.hp < 0) gameState.hp = 0;
+
+            gameState.loading = false;
+            renderUI();
+        }
+
+        /**
+         * Core S.P.E.C.I.A.L. Check logic.
+         */
+        async function handleSkillCheck(stat, actionName, type = 'skill') {
+            const effectiveStat = getEffectiveStat(stat.toLowerCase());
+            const luckBonus = getEffectiveStat('l') * 2; 
+            const baseChance = effectiveStat * 10; 
+            const roll = Math.floor(Math.random() * 100) + 1;
+            const success = roll <= (baseChance + luckBonus);
+            
+            addToLog(`--- Skill Check: ${actionName} using ${stat} (Required Roll: ${baseChance + luckBonus} / Roll: ${roll}) ---`, false);
+
+            let resultText;
+            let query, systemPrompt;
+
+            if (success) {
+                gameState.xp += 10;
+                checkLevelUp();
+                
+                if (type === 'rad_skill') {
+                    query = `Generate a short description of how the player successfully navigates the highly irradiated area, using their high **Endurance**. They find a small reward.`;
+                    systemPrompt = "Act as a world-weary game master. Write a **very short, concise (1-2 sentence)** event description. Use a slightly triumphant but gritty tone.";
+                    resultText = await generateContentWithGemini(query, systemPrompt);
+                    
+                    // Reward with a Radaway or Stimpak
+                    const rewardItem = { ...LOOT_ITEMS[Math.random() < 0.5 ? 16 : 17] }; 
+                    gameState.inventory.push(rewardItem);
+                    addToLog(`REWARD: Found a **${rewardItem.name}**!`, false);
+                } else {
+                    query = `Generate a short description of what happens when a player attempts to ${actionName} and *succeeds* using their high **${stat}**. Reward them with a small piece of salvage or knowledge.`;
+                    systemPrompt = "Act as a world-weary game master. Write a **very short, concise (1-2 sentence)** event description. Use a slightly triumphant but gritty tone.";
+                    resultText = await generateContentWithGemini(query, systemPrompt);
+                }
+
+                if (stat === 'E') { gameState.hp = Math.min(gameState.maxHp, gameState.hp + 5); }
+                else if (stat === 'I' || stat === 'P') { addToLog('You gain 1 extra XP for the valuable information found.', false); gameState.xp += 1; }
+                else if (stat === 'S') { addToLog('You salvage a piece of heavy metal.', false); }
+
+
+            } else {
+                gameState.hp -= Math.floor(Math.random() * 10) + 1; 
+                if (gameState.hp < 0) gameState.hp = 0;
+
+                if (type === 'rad_skill') {
+                    query = `Generate a short description of how the player failed to navigate the highly irradiated area, resulting in significant radiation exposure.`;
+                    systemPrompt = "Act as a cruel but fair game master. Write a **very short, concise (1-2 sentence)** event description. Use a tone that emphasizes failure and consequence.";
+                    resultText = await generateContentWithGemini(query, systemPrompt);
+                    applyRadiation(Math.floor(Math.random() * 5) + 5); // 5 to 9 Rads on failure
+                } else {
+                    query = `Generate a short description of what happens when a player attempts to ${actionName} and *fails* using their low **${stat}**. Include a minor injury or loss of resources.`;
+                    systemPrompt = "Act as a cruel but fair game master. Write a **very short, concise (1-2 sentence)** event description. Use a tone that emphasizes failure and consequence.";
+                    resultText = await generateContentWithGemini(query, systemPrompt);
+                }
+            }
+            
+            addToLog(resultText, true);
+        }
+
+        /**
+         * Initiates combat sequence.
+         */
+        function enterCombat(enemyName) {
+            const enemyHP = Math.floor(Math.random() * 20) + 30; 
+            const enemyDamage = Math.floor(Math.random() * 5) + 5; 
+            gameState.isCombat = true;
+            gameState.enemy = { name: enemyName, hp: enemyHP, initialHp: enemyHP, damage: enemyDamage };
+            addToLog(`**WARNING**: You are now in combat with a ${enemyName}!`, false);
+            renderUI();
+        }
+
+        /**
+         * Handles player's attack action in combat.
+         */
+        function handleAttack() {
+            if (!gameState.isCombat) return;
+
+            const effectiveAgi = getEffectiveStat('a');
+            const effectiveLuck = getEffectiveStat('l');
+            const effectiveStr = getEffectiveStat('s');
+            
+            const toHitChance = (effectiveAgi * 5) + (effectiveLuck * 2) + 50; 
+            const roll = Math.floor(Math.random() * 100) + 1;
+            
+            let playerDamage = 0;
+            let enemyDamage = 0;
+
+            if (roll <= toHitChance) {
+                const baseDamage = Math.floor(Math.random() * (effectiveStr * 2)) + 5;
+                const weaponBonus = getWeaponDamageBonus();
+                playerDamage = baseDamage + weaponBonus;
+
+                gameState.enemy.hp -= playerDamage;
+                addToLog(`You successfully hit the ${gameState.enemy.name} for ${playerDamage} damage!`, false);
+            } else {
+                addToLog("You swing and miss! Your aim is off.", false);
+            }
+
+            if (gameState.enemy.hp > 0) {
+                const enemyHitChance = 60; 
+                const enemyRoll = Math.floor(Math.random() * 100) + 1;
+
+                if (enemyRoll <= enemyHitChance) {
+                    enemyDamage = Math.floor(Math.random() * (gameState.enemy.damage)) + 1;
+                    
+                    const totalDefense = Math.floor(getEffectiveStat('e') / 2) + getArmorDefenseBonus();
+                    enemyDamage -= totalDefense; 
+                    if (enemyDamage < 1) enemyDamage = 1;
+
+                    gameState.hp -= enemyDamage;
+                    addToLog(`The ${gameState.enemy.name} retaliates and hits you for ${enemyDamage} damage!`, false);
+                } else {
+                    addToLog(`The ${gameState.enemy.name} snarls and misses its attack.`, false);
+                }
+            }
+
+            if (gameState.hp <= 0) {
+                endCombat(false); 
+            } else if (gameState.enemy.hp <= 0) {
+                endCombat(true); 
+            }
+
+            renderUI();
+        }
+
+        /**
+         * Handles player's attempt to flee.
+         */
+        function handleFlee() {
+            if (!gameState.isCombat) return;
+
+            const effectiveAgi = getEffectiveStat('a');
+            const effectiveLuck = getEffectiveStat('l');
+
+            const fleeChance = (effectiveAgi * 10) + (effectiveLuck * 5);
+            const roll = Math.floor(Math.random() * 100) + 1;
+
+            if (roll <= fleeChance) {
+                addToLog("You manage to scramble away from the confrontation! Flee successful.", false);
+                endCombat(true, true); 
+            } else {
+                addToLog("You trip over rubble! Flee attempt failed.", false);
+                let enemyDamage = Math.floor(Math.random() * (gameState.enemy.damage)) + 1;
+                
+                const totalDefense = Math.floor(getEffectiveStat('e') / 2) + getArmorDefenseBonus();
+                enemyDamage -= totalDefense; 
+                if (enemyDamage < 1) enemyDamage = 1;
+
+                gameState.hp -= enemyDamage;
+                addToLog(`The ${gameState.enemy.name} hits you while you run for ${enemyDamage} damage!`, false);
+                if (gameState.hp < 0) gameState.hp = 0;
+            }
+            renderUI();
+        }
+
+        /**
+         * Ends the current combat instance and determines loot/XP.
+         */
+        function endCombat(win, fled = false) {
+            gameState.isCombat = false;
+            if (win && !fled) {
+                const xpGain = gameState.enemy.initialHp * 2; 
+                gameState.xp += xpGain;
+                addToLog(`You defeated the ${gameState.enemy.name}! Gained ${xpGain} XP.`, false);
+                handleLoot(); 
+                checkLevelUp();
+            } else if (!win && !fled) {
+                addToLog(`You have been defeated by the ${gameState.enemy.name}! Game Over.`, false);
+            }
+            gameState.enemy = null;
+        }
+
+        /**
+         * Handles the chance to get loot after a successful combat.
+         */
+        function handleLoot() {
+            const lootChance = (getEffectiveStat('l') * 5) + 30; 
+            const roll = Math.floor(Math.random() * 100) + 1;
+
+            if (roll <= lootChance) {
+                let lootPool = [...LOOT_ITEMS];
+                if (getEffectiveStat('l') < 8 && roll < 80) {
+                    lootPool = lootPool.filter(item => !item.isPowerArmor);
+                }
+                
+                // Add consumables to the general loot pool chance
+                lootPool = lootPool.filter(item => item.id > 16 || item.type !== 'consumable'); 
+                
+                if (lootPool.length === 0) {
+                    addToLog("The enemy carried nothing of value.", false);
+                    return;
+                }
+
+                const itemIndex = Math.floor(Math.random() * lootPool.length);
+                const newItem = { ...lootPool[itemIndex] }; 
+                
+                gameState.inventory.push(newItem);
+                if (newItem.isPowerArmor) {
+                    addToLog(`<span class="item-text text-red-500">LEGENDARY LOOT!</span> You miraculously recovered a **${newItem.name}**! Check your Inventory!`, false);
+                } else if (newItem.type === 'consumable') {
+                    addToLog(`<span class="item-text">LOOT FOUND!</span> Found a **${newItem.name}**!`, false);
+                } else {
+                    addToLog(`<span class="item-text">LOOT FOUND!</span> You recovered a **${newItem.name}**! Check your Inventory.`, false);
+                }
+            } else {
+                addToLog("The enemy carried nothing of value.", false);
+            }
+        }
+
+        /**
+         * Checks for level up requirements.
+         */
+        function checkLevelUp() {
+            const nextLevelXP = gameState.level * 100;
+            if (gameState.xp >= nextLevelXP) {
+                gameState.level++;
+                gameState.xp -= nextLevelXP;
+                gameState.skillPoints += 1;
+                gameState.maxHp = calculateMaxHp(); // Max HP updated dynamically
+                gameState.hp = gameState.maxHp;
+                addToLog(`**LEVEL UP!** You are now Level ${gameState.level}! You gained 1 Skill Point.`, false);
+            }
+        }
+
+        /**
+         * Handles the final game over state.
+         */
+        async function renderGameOver() {
+            document.getElementById('action-container').innerHTML = `
+                <div class="text-3xl text-red-500 animate-pulse p-10 text-center">
+                    **PROTOCOL TERMINATED: GAME OVER**
+                </div>
+                <button onclick="window.location.reload()" class="p-3 w-full rounded bg-red-900 hover:text-black mt-4">REBOOT</button>
+            `;
+            document.querySelectorAll('button:not(#action-container button)').forEach(btn => btn.disabled = true);
+
+            gameState.loading = true;
+            const query = `Generate a very short, grim epitaph for a wasteland traveler who died in the ruins. They reached level ${gameState.level} and died in ${gameState.location}.`;
+            const systemPrompt = "Act as an old, rusted metal sign near a shallow grave. Write a single, concise sentence.";
+            const epitaph = await generateContentWithGemini(query, systemPrompt);
+            addToLog(`[EPITAPH]: ${epitaph}`, true);
+            gameState.loading = false;
+            renderUI();
+        }
+
+        /**
+         * Allocates a skill point to a chosen stat.
+         */
+        window.allocateStat = function(stat) {
+            if (gameState.skillPoints > 0) {
+                gameState[stat.toLowerCase()]++;
+                gameState.skillPoints--;
+                addToLog(`Stat increase: ${stat} is now ${gameState[stat.toLowerCase()]}.`, false);
+                renderUI();
+            }
+        }
+
+        /**
+         * Equips an item from the inventory.
+         */
+        window.handleEquip = function(inventoryIndex) {
+            const item = gameState.inventory[inventoryIndex];
+            if (!item || item.type === 'consumable') return; // Cannot equip consumables
+
+            const slot = item.type; 
+            const armorSlots = ['head', 'face', 'torso', 'legs'];
+            
+            const isPowerArmor = item.isPowerArmor;
+            const slotsToEquip = isPowerArmor ? armorSlots : [slot];
+
+            if (!slotsToEquip.every(s => gameState.equipped[s] !== undefined)) {
+                 addToLog(`ERROR: Item type "${item.type}" does not match any known equipment slot.`, false);
+                 return;
+            }
+
+            for (const targetSlot of slotsToEquip) {
+                const currentEquipped = gameState.equipped[targetSlot];
+                
+                if (currentEquipped && currentEquipped !== item) { 
+                    
+                    if (currentEquipped.isPowerArmor) {
+                         if (targetSlot === 'torso') {
+                            handleUnequip('torso', false); 
+                            addToLog(`The existing **${currentEquipped.name}** was removed to make way for the new suit.`, false);
+                         }
+                    } else {
+                        gameState.inventory.push(currentEquipped);
+                        gameState.equipped[targetSlot] = null;
+                        addToLog(`Unequipped **${currentEquipped.name}** from ${targetSlot}.`, false);
+                    }
+                }
+            }
+            
+            for (const targetSlot of slotsToEquip) {
+                gameState.equipped[targetSlot] = item;
+            }
+
+            gameState.inventory.splice(inventoryIndex, 1);
+
+            addToLog(`Equipped **${item.name}** to the ${isPowerArmor ? 'POWER ARMOR' : slot.toUpperCase()} slot(s).`, false);
+            renderUI();
+        }
+
+        /**
+         * Unequips an item from a slot.
+         */
+        window.handleUnequip = function(slot, render = true) {
+            const item = gameState.equipped[slot];
+            if (!item) return;
+
+            const isPowerArmor = item.isPowerArmor;
+            const armorSlots = ['head', 'face', 'torso', 'legs'];
+
+            if (isPowerArmor) {
+                for (const paSlot of armorSlots) {
+                    gameState.equipped[paSlot] = null;
+                }
+                gameState.inventory.push(item);
+                addToLog(`The massive **${item.name}** system has been unequipped from all armor slots.`, false);
+            } else {
+                gameState.inventory.push(item);
+                gameState.equipped[slot] = null;
+                addToLog(`Unequipped **${item.name}**. It is now in your inventory.`, false);
+            }
+            
+            if(render) renderUI();
+        }
+        
+        // --- Initialization ---
+        
+        window.onload = function() {
+            // Start the Firebase setup and authentication process, which handles the initial load.
+            firebaseSetup();
+        };
+        
+    </script>
+</head>
+<body class="p-4 sm:p-8">
+
+    <div class="container mx-auto">
+
+        <!-- Header -->
+        <h1 class="text-3xl text-center mb-2 border-b border-green-700 pb-2">
+            WASTELAND PROTOCOL v4.3 (Radiation Active)
+        </h1>
+        <div id="user-id-display" class="text-sm text-center mb-4 text-gray-500">User ID Loading...</div>
+
+        <div class="flex flex-col lg:flex-row gap-6">
+
+            <!-- Left Panel: Stats, Gear, and Inventory -->
+            <div class="lg:w-1/3 terminal-screen space-y-4">
+                <h2 class="text-2xl border-b border-green-700 pb-2">
+                    <span id="player-location">The Vault Exit</span>
+                </h2>
+
+                <div id="skill-points-display" class="text-center font-bold"></div>
+
+                <!-- Health, XP, and Radiation Meters -->
+                <div class="py-2">
+                    <!-- HP Bar -->
+                    <div class="flex justify-between text-sm mb-1">
+                        <span>HP: <span id="hp-text">100 / 100</span></span>
+                        <span>LEVEL: <span id="player-level">1</span></span>
+                    </div>
+                    <div class="stat-bar">
+                        <div id="hp-fill" class="stat-fill" style="width: 100%;"></div>
+                    </div>
+
+                    <!-- XP Bar -->
+                    <div class="flex justify-between text-xs mt-3 mb-1 text-yellow-500">
+                        <span>XP Progress</span>
+                        <span><span id="xp-text">0 / 100</span></span>
+                    </div>
+                    <div class="xp-bar">
+                        <div id="xp-fill" class="xp-fill" style="width: 0%;"></div>
+                    </div>
+                    
+                    <!-- Radiation Display (NEW) -->
+                    <div id="rad-container" class="flex justify-between text-xs mt-3 mb-1 rad-text">
+                        <span>RADIATION SICKNESS:</span>
+                        <span><span id="radiation-display">0</span> RADS</span>
+                    </div>
+                </div>
+
+                <!-- S.P.E.C.I.A.L. Attributes -->
+                <h3 class="text-xl">S.P.E.C.I.A.L. Attributes</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Stat Template -->
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold">STR (S): <span id="stat-S">5</span></span>
+                        <button onclick="allocateStat('S')" class="text-xs px-2 py-1 bg-green-700 rounded-full">+</button>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold">PER (P): <span id="stat-P">5</span></span>
+                        <button onclick="allocateStat('P')" class="text-xs px-2 py-1 bg-green-700 rounded-full">+</button>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold">END (E): <span id="stat-E">5</span></span>
+                        <button onclick="allocateStat('E')" class="text-xs px-2 py-1 bg-green-700 rounded-full">+</button>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold">CHA (C): <span id="stat-C">5</span></span>
+                        <button onclick="allocateStat('C')" class="text-xs px-2 py-1 bg-green-700 rounded-full">+</button>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold">INT (I): <span id="stat-I">5</span></span>
+                        <button onclick="allocateStat('I')" class="text-xs px-2 py-1 bg-green-700 rounded-full">+</button>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold">AGI (A): <span id="stat-A">5</span></span>
+                        <button onclick="allocateStat('A')" class="text-xs px-2 py-1 bg-green-700 rounded-full">+</button>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold">LUK (L): <span id="stat-L">5</span></span>
+                        <button onclick="allocateStat('L')" class="text-xs px-2 py-1 bg-green-700 rounded-full">+</button>
+                    </div>
+                </div>
+
+                <div id="stat-allocation-container" class="hidden mt-4 pt-4 border-t border-green-700 text-sm">
+                    Allocate your available **Skill Points** by clicking the '+' next to the desired attribute.
+                </div>
+                
+                <!-- Equipped Gear -->
+                <h3 class="text-xl border-t border-green-700 pt-4 mt-4">Equipped Gear</h3>
+                <div id="equipped-container" class="space-y-2">
+                    <!-- Equipped items populate here -->
+                </div>
+
+                <!-- Inventory -->
+                <h3 class="text-xl border-t border-green-700 pt-4 mt-4">Inventory</h3>
+                <div id="inventory-list" class="space-y-1 max-h-48 overflow-y-auto pr-2">
+                    <!-- Inventory list populates here -->
+                </div>
+            </div>
+
+            <!-- Right Panel: Message Log and Actions -->
+            <div class="lg:w-2/3 terminal-screen flex flex-col h-[60vh] lg:h-[80vh]">
+                <h2 class="text-2xl border-b border-green-700 pb-2">LOG</h2>
+                
+                <!-- Message Log -->
+                <div id="message-log" class="flex-grow overflow-y-auto p-2 mb-4 border border-green-700/50 rounded bg-black/20 h-full">
+                    <!-- Log entries populate here -->
+                </div>
+
+                <!-- Actions -->
+                <div id="action-container" class="flex flex-wrap gap-4 justify-center">
+                    <!-- Actions buttons populate here via renderUI() -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
