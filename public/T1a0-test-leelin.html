@@ -1,3 +1,83 @@
 <h1 align="center">T1a0-test-leelin.html</h1>
 
+<!DOCTYPE html>
+<html>
+<head>
+    
+</head>
+<body>
+
+<h1 align="center">t2a19-leet-leelin.html</h1>
+
+<ol>
+
+<!-- 1. Show your prompt here -->
+<li><b>Your Prompt:</b><br>
+    Ask chatGPT for a beginner friendly javascript Leet code question.
+</li>
+
+<br><br>
+
+<!-- 2. Show the Leet question here -->
+<li><b>Leet Question:</b><br><br>
+    <b>Two Sum (Beginner Friendly Version)</b><br>
+    Given an array of numbers and a target value, return the indices of the two numbers that add up to the target.<br>
+    You may assume exactly one solution exists, and you may not use the same element twice.<br>
+    Example: nums = [2,7,11,15], target = 9 → returns [0,1]
+</li>
+
+<br><br>
+
+<!-- 3. Your version of the solution inside PRE tags -->
+<li><b>My Version of the Answer (Inside PRE tags):</b>
+<pre>
+// My attempt at solving the beginner Two Sum problem
+
+function twoSum(nums, target) {
+    for (let i = 0; i < nums.length; i++) {
+        for (let j = i + 1; j < nums.length; j++) {
+            if (nums[i] + nums[j] === target) {
+                return [i, j];
+            }
+        }
+    }
+    return null;
+}
+
+// Example test
+console.log(twoSum([2, 7, 11, 15], 9));
+</pre>
+</li>
+
+<br><br>
+
+<!-- 4. ChatGPT clean working code -->
+<li><b>ChatGPT Working Code:</b><br><br>
+
+<script>
+// Clean and minimal ChatGPT version
+
+function twoSumChatGPT(nums, target) {
+    const map = {}; // value → index
+
+    for (let i = 0; i < nums.length; i++) {
+        const needed = target - nums[i];
+
+        if (map[needed] !== undefined) {
+            return [map[needed], i];
+        }
+        map[nums[i]] = i;
+    }
+    return null;
+}
+
+console.log("ChatGPT version:", twoSumChatGPT([2, 7, 11, 15], 9));
+</script>
+
+</li>
+
+</ol>
+
+</body>
+</html>
 
