@@ -1,0 +1,57 @@
+<h1 align=center>test.html</h1>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Two Sum Demo</title>
+</head>
+<body>
+
+<h2>Two Sum – ChatGPT Working Code</h2>
+
+<pre>
+function twoSum(nums, target) {
+    const map = {};
+
+    for (let i = 0; i < nums.length; i++) {
+        const needed = target - nums[i];
+
+        if (map.hasOwnProperty(needed)) {
+            return [map[needed], i];
+        }
+
+        map[nums[i]] = i;
+    }
+
+    return [];
+}
+</pre>
+
+<script>
+function twoSum(nums, target) {
+    const map = {};
+
+    for (let i = 0; i < nums.length; i++) {
+        const needed = target - nums[i];
+
+        if (map.hasOwnProperty(needed)) {
+            return [map[needed], i];
+        }
+
+        map[nums[i]] = i;
+    }
+
+    return [];
+}
+
+// Example run:
+const nums = [2, 7, 11, 15];
+const target = 9;
+
+console.log("nums:", nums);
+console.log("target:", target);
+console.log("twoSum Output:", twoSum(nums, target));
+</script>
+
+</body>
+</html>
