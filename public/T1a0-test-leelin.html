@@ -1,60 +1,111 @@
-<h1 align="center">T1a0-test-leelin.html</h1>
-
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>Two Sum – JavaScript Demo</title>
+  <title>t2a20-leet-YourName.html</title>
+
+  <style>
+    body {
+      background-color: rgb(255, 230, 150);
+      color: darkslateblue;
+      font-family: Arial, sans-serif;
+      transition: all 0.4s ease;
+    }
+
+    h1 {
+      color: crimson;
+      text-align: center;
+      border-bottom: 3px solid black;
+      padding-bottom: 5px;
+    }
+
+    pre {
+      background: #fff;
+      padding: 10px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+  </style>
 </head>
+
 <body>
 
-<h2>Two Sum – JavaScript Solution</h2>
+<h1>t2a20-leet-YourName.html</h1>
 
-<p>
-Given an array <code>nums</code> and a value <code>target</code>, return the indices of the two
-numbers that add up to <code>target</code>. Assume exactly one valid solution exists.
+<p><strong>Prompt:</strong> Give me a beginner LeetCode question for me to solve.</p>
+
+<p><strong>Question:</strong>  
+Create a function that takes an array of integers <code>nums</code> and returns how many numbers in the array are **even**.
 </p>
 
+<br>
+
+<h2>My Answer</h2>
+
 <pre><code>
-// Two Sum function
-function twoSum(nums, target) {
-    const map = {};
+function countEvens(nums) {
+  let count = 0;
 
-    for (let i = 0; i < nums.length; i++) {
-        const need = target - nums[i];
-
-        if (need in map) {
-            return [map[need], i];
-        }
-
-        map[nums[i]] = i;
+  for (let i = 0; i &lt; nums.length; i++) {
+    if (nums[i] % 2 === 0) {
+      count++;
     }
+  }
+
+  return count;
 }
 </code></pre>
 
+<br>
+
+<h2>ChatGPT Answer</h2>
+
+<pre><code>
+function countEvens(nums) {
+  return nums.filter(n => n % 2 === 0).length;
+}
+</code></pre>
+
+<br>
+
+<h2>Tester</h2>
+
+<p>Enter a list of comma-separated numbers:</p>
+
+<input id="numInput" type="text" value="2, 5, 8, 11, 14, 3">
+
+<br><br>
+
+<button id="numSubmit">Submit</button>
+
+<br><br>
+
+<div id="resultDiv">Result appears here...</div>
+
+
 <script>
-// Two Sum implementation
-function twoSum(nums, target) {
-    const map = {};
+let submitBtn = document.getElementById("numSubmit");
+let resultDiv = document.getElementById("resultDiv");
 
-    for (let i = 0; i < nums.length; i++) {
-        const need = target - nums[i];
+function countEvens(nums) {
+  let count = 0;
 
-        if (need in map) {
-            return [map[need], i];
-        }
-
-        map[nums[i]] = i;
+  for (let i = 0; i < nums.length; i++) {
+    if (nums[i] % 2 === 0) {
+      count++;
     }
+  }
+
+  return count;
 }
 
-// Example demonstration
-const nums = [2, 7, 11, 15];
-const target = 9;
+submitBtn.addEventListener("click", function () {
+  let raw = document.getElementById("numInput").value;
+  let array = raw.split(",").map(Number);
 
-console.log("nums:", nums);
-console.log("target:", target);
-console.log("result:", twoSum(nums, target));
+  const result = countEvens(array);
+
+  resultDiv.textContent = "Number of even values = " + result;
+});
 </script>
 
 </body>
