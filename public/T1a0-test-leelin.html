@@ -1,64 +1,27 @@
-<h1 align="center">T1a0-test-leelin.html</h1>
-
-<h1 align=center>t2a19-leet-leelin.html</h1>
-
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Two Sum - JavaScript Solution</title>
+    <title>Two Sum Demo</title>
 </head>
 <body>
 
-<h2>LeetCode-Style Problem: Two Sum</h2>
-
-<p>
-Given an array of integers <code>nums</code> and an integer <code>target</code>, return the indices of the two numbers such that they add up to <code>target</code>.<br>
-You may assume that each input has exactly one solution, and you may not use the same element twice.
-</p>
-
-<h3>Your Code Solution:</h3>
-
-<pre>
-function twoSum(nums, target) {
-    const map = {};
-
-    for (let i = 0; i < nums.length; i++) {
-        const needed = target - nums[i];
-
-        if (map.hasOwnProperty(needed)) {
-            return [map[needed], i];
-        }
-
-        map[nums[i]] = i;
-    }
-
-    return [];
-}
-</pre>
-
-<h3>Try It Below:</h3>
-
-<p>Open the console to see the result.</p>
+<h2>Two Sum – JavaScript Demo</h2>
 
 <script>
-// Your Two Sum function
+// Two Sum function
 function twoSum(nums, target) {
     const map = {};
-
     for (let i = 0; i < nums.length; i++) {
         const needed = target - nums[i];
-
         if (map.hasOwnProperty(needed)) {
             return [map[needed], i];
         }
-
         map[nums[i]] = i;
     }
-
     return [];
 }
 
-// Example run:
+// Example run
 const nums = [2, 7, 11, 15];
 const target = 9;
 
@@ -69,15 +32,3 @@ console.log("Two Sum Output:", twoSum(nums, target));
 
 </body>
 </html>
-
-
-<pre>
-This code is in the pre tag
-     it save spaces  and linebreaks
-              For example this is shifted in
-</pre>
-
-<br><br><li> Put the chatGPT working code here. (Sensibly, it does not need several tags that are not used)
-
-</ol>
-
