@@ -1,33 +1,60 @@
+
+
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Two Sum Demo</title>
+    <meta charset="UTF-8">
+    <title>Two Sum – JavaScript Demo</title>
 </head>
 <body>
 
-<h2>Two Sum – JavaScript Demo</h2>
+<h2>Two Sum – JavaScript Solution</h2>
 
-<script>
+<p>
+Given an array <code>nums</code> and a value <code>target</code>, return the indices of the two
+numbers that add up to <code>target</code>. Assume exactly one valid solution exists.
+</p>
+
+<pre><code>
 // Two Sum function
 function twoSum(nums, target) {
     const map = {};
+
     for (let i = 0; i < nums.length; i++) {
-        const needed = target - nums[i];
-        if (map.hasOwnProperty(needed)) {
-            return [map[needed], i];
+        const need = target - nums[i];
+
+        if (need in map) {
+            return [map[need], i];
         }
+
         map[nums[i]] = i;
     }
-    return [];
+}
+</code></pre>
+
+<script>
+// Two Sum implementation
+function twoSum(nums, target) {
+    const map = {};
+
+    for (let i = 0; i < nums.length; i++) {
+        const need = target - nums[i];
+
+        if (need in map) {
+            return [map[need], i];
+        }
+
+        map[nums[i]] = i;
+    }
 }
 
-// Example run
+// Example demonstration
 const nums = [2, 7, 11, 15];
 const target = 9;
 
-console.log("Input nums:", nums);
-console.log("Target:", target);
-console.log("Two Sum Output:", twoSum(nums, target));
+console.log("nums:", nums);
+console.log("target:", target);
+console.log("result:", twoSum(nums, target));
 </script>
 
 </body>
