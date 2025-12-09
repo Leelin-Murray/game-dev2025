@@ -1,57 +1,573 @@
 <h1 align=center>test.html</h1>
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Two Sum Demo</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blue Blur Platformer</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #202028;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        canvas {
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            background: linear-gradient(to bottom, #87CEEB, #E0F6FF);
+        }
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #FFD700;
+            font-weight: bold;
+            font-size: 24px;
+            text-shadow: 2px 2px 0 #000;
+            font-family: monospace;
+            z-index: 10;
+        }
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            background: rgba(0,0,0,0.5);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            pointer-events: none;
+        }
+        .hidden { display: none; }
+    </style>
 </head>
 <body>
 
-<h2>Two Sum – ChatGPT Working Code</h2>
-
-<pre>
-function twoSum(nums, target) {
-    const map = {};
-
-    for (let i = 0; i < nums.length; i++) {
-        const needed = target - nums[i];
-
-        if (map.hasOwnProperty(needed)) {
-            return [map[needed], i];
-        }
-
-        map[nums[i]] = i;
-    }
-
-    return [];
-}
-</pre>
+    <div id="ui">RINGS: <span id="ring-count">0</span></div>
+    <div id="controls">ARROWS: Move/Jump | DOWN (Hold): Spin Dash | DOWN (Run): Roll</div>
+    <canvas id="gameCanvas"></canvas>
 
 <script>
-function twoSum(nums, target) {
-    const map = {};
+/**
+ * SONIC-STYLE PLATFORMER ENGINE
+ * Focused on momentum, acceleration, and flow.
+ */
 
-    for (let i = 0; i < nums.length; i++) {
-        const needed = target - nums[i];
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const ringUi = document.getElementById('ring-count');
 
-        if (map.hasOwnProperty(needed)) {
-            return [map[needed], i];
-        }
+// Game Constants
+const GRAVITY = 0.5;
+const FRICTION_GROUND = 0.96; // Slippery but grippy enough
+const FRICTION_AIR = 0.99;
+const FRICTION_ROLL = 0.7; // Rolling keeps momentum better
+const ACCEL = 0.3;
+const AIR_ACCEL = 0.15;
+const JUMP_FORCE = 14;
+const MAX_SPEED = 30;
+const MAX_SPEED_ROLL = 150;
+const SPINDASH_POWER_MAX = 60; // INCREASED: More top speed for the spindash
 
-        map[nums[i]] = i;
+let width, height;
+
+// Input State
+const keys = {
+    ArrowUp: false,
+    ArrowDown: false,
+    ArrowLeft: false,
+    ArrowRight: false,
+    Space: false
+};
+
+// Game State
+let camera = { x: 0, y: 0 };
+let rings = 0;
+let frameCount = 0;
+
+// Assets (Procedural for single file)
+const sprites = {
+    sonic: { color: '#3060F0' },
+    grass: { color: '#4CAF50', top: '#81C784' },
+    dirt: { color: '#5D4037' },
+    ring: { color: '#FFD700' },
+    spring: { color: '#F44336' }
+};
+
+class Player {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.w = 30;
+        this.h = 40;
+        this.vx = 0;
+        this.vy = 0;
+        this.grounded = false;
+        this.facingRight = true;
+        this.rolling = false;
+        this.spindashCharge = 0;
+        this.rotation = 0;
+        this.visualY = 0; // For squashing/stretching
     }
 
-    return [];
+    update() {
+        // --- 1. Physics & Input ---
+        
+        let friction = this.grounded ? FRICTION_GROUND : FRICTION_AIR;
+        let accel = this.grounded ? ACCEL : AIR_ACCEL;
+        let maxSpd = this.rolling ? MAX_SPEED_ROLL : MAX_SPEED;
+
+        // Spindash Logic
+        if (this.grounded && keys.ArrowDown && Math.abs(this.vx) < 1) {
+            this.spindashCharge += 1.5; // INCREASED: Faster charge rate
+            if (this.spindashCharge > SPINDASH_POWER_MAX) this.spindashCharge = SPINDASH_POWER_MAX;
+            this.state = 'spindash';
+            this.vx = 0;
+            
+            // Visual feedback for charge
+            if (Math.floor(frameCount / 4) % 2 === 0) {
+                this.visualColor = '#80aaff';
+            } else {
+                this.visualColor = sprites.sonic.color;
+            }
+        } 
+        // Release Spindash
+        else if (this.spindashCharge > 0) {
+            this.rolling = true;
+            this.vx = this.facingRight ? this.spindashCharge : -this.spindashCharge;
+            
+            // Play sound (simulated)
+            // audioCtx... (omitted for simplicity)
+            
+            this.spindashCharge = 0;
+            this.state = 'rolling';
+            this.visualColor = sprites.sonic.color;
+        }
+        // Normal Movement
+        else {
+            this.state = 'normal';
+            this.visualColor = sprites.sonic.color;
+
+            // Rolling Trigger
+            if (this.grounded && keys.ArrowDown && Math.abs(this.vx) > 1) {
+                this.rolling = true;
+                friction = FRICTION_ROLL; // Less friction when rolling
+                this.h = 20; // Hitbox gets smaller
+                this.y += 20; // Adjust position so we don't float
+            } else if (!keys.ArrowDown && this.rolling && this.grounded) {
+                // Unroll if slow or stopped holding down (optional classic mechanic logic)
+                // For this demo, unroll if stopped or jumping
+                if (Math.abs(this.vx) < 0.5) {
+                    this.unroll();
+                }
+            }
+
+            if (keys.ArrowRight) {
+                if (!this.rolling) this.vx += accel;
+                else if (this.vx < 0) this.vx += accel * 0.5; // Decelerate faster if rolling against direction
+                this.facingRight = true;
+            }
+            if (keys.ArrowLeft) {
+                if (!this.rolling) this.vx -= accel;
+                else if (this.vx > 0) this.vx -= accel * 0.5;
+                this.facingRight = false;
+            }
+
+            // Friction
+            this.vx *= friction;
+
+            // Jump
+            if ((keys.ArrowUp || keys.Space) && this.grounded) {
+                this.vy = -JUMP_FORCE;
+                this.grounded = false;
+                this.unroll(); // Jump out of roll
+                // Variable jump height handled by gravity
+            }
+        }
+
+        // Gravity
+        this.vy += GRAVITY;
+
+        // Terminal Velocity
+        if (this.vx > maxSpd) this.vx = maxSpd;
+        if (this.vx < -maxSpd) this.vx = -maxSpd;
+
+        // Apply Velocity
+        this.x += this.vx;
+        this.y += this.vy;
+
+        // --- 2. Collision Detection ---
+        this.grounded = false;
+        
+        // Check Platform Collisions
+        for (let platform of level.platforms) {
+            let dir = this.colCheck(this, platform);
+            if (dir === "b") {
+                this.grounded = true;
+                this.vy = 0;
+                // Stick to moving platforms if we had them
+            } else if (dir === "t") {
+                this.vy = 0;
+            } else if (dir === "l" || dir === "r") {
+                this.vx = 0;
+            }
+        }
+
+        // Check Springs
+        for (let spring of level.springs) {
+            if (this.intersects(spring)) {
+                this.vy = -spring.power;
+                this.grounded = false;
+                this.unroll();
+            }
+        }
+
+        // Check Rings
+        for (let i = level.rings.length - 1; i >= 0; i--) {
+            let r = level.rings[i];
+            if (!r.collected && this.dist(this.x + this.w/2, this.y + this.h/2, r.x, r.y) < 30) {
+                r.collected = true;
+                rings++;
+                ringUi.innerText = rings;
+                // Sparkle effect could go here
+            }
+        }
+
+        // World Bounds
+        if (this.y > 2000) {
+            // Death/Respawn
+            this.respawn();
+        }
+    }
+
+    unroll() {
+        if(this.rolling) {
+            this.rolling = false;
+            this.y -= 20; // Pop back up
+            this.h = 40;
+        }
+    }
+
+    draw() {
+        ctx.save();
+        ctx.translate(Math.floor(this.x + this.w/2 - camera.x), Math.floor(this.y + this.h/2 - camera.y));
+
+        if (this.rolling || (this.state === 'spindash')) {
+            // Spin animation
+            this.rotation += this.vx * 0.5;
+            ctx.rotate(this.rotation);
+            ctx.fillStyle = this.visualColor;
+            ctx.beginPath();
+            ctx.arc(0, 0, this.w/2, 0, Math.PI * 2);
+            ctx.fill();
+            // Motion blur line
+            ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(0,0, this.w/2 - 5, 0, Math.PI*2);
+            ctx.stroke();
+        } else {
+            // Reset rotation
+            this.rotation = 0;
+            // Face direction
+            if (!this.facingRight) ctx.scale(-1, 1);
+
+            // Body (Blue)
+            ctx.fillStyle = this.visualColor;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 15, 20, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Head Spikes (Visual)
+            ctx.beginPath();
+            ctx.moveTo(-5, -15);
+            ctx.lineTo(-20, -5);
+            ctx.lineTo(-5, 5);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(-5, 0);
+            ctx.lineTo(-20, 10);
+            ctx.lineTo(-5, 15);
+            ctx.fill();
+
+            // Belly (Tan)
+            ctx.fillStyle = '#FFCCBC';
+            ctx.beginPath();
+            ctx.ellipse(5, 2, 8, 12, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Eye
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.ellipse(5, -8, 6, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(7, -8, 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Shoes (Red)
+            ctx.fillStyle = '#D50000';
+            ctx.fillRect(-8, 15, 10, 8);
+            ctx.fillRect(2, 15, 10, 8);
+            // Shoe Stripe
+            ctx.fillStyle = 'white';
+            ctx.fillRect(-8, 18, 10, 2);
+            ctx.fillRect(2, 18, 10, 2);
+        }
+
+        ctx.restore();
+    }
+
+    colCheck(shapeA, shapeB) {
+        // AABB Collision logic
+        let vX = (shapeA.x + (shapeA.w / 2)) - (shapeB.x + (shapeB.w / 2));
+        let vY = (shapeA.y + (shapeA.h / 2)) - (shapeB.y + (shapeB.h / 2));
+        let hWidths = (shapeA.w / 2) + (shapeB.w / 2);
+        let hHeights = (shapeA.h / 2) + (shapeB.h / 2);
+        let colDir = null;
+
+        if (Math.abs(vX) < hWidths && Math.abs(vY) < hHeights) {
+            let oX = hWidths - Math.abs(vX);
+            let oY = hHeights - Math.abs(vY);
+
+            if (oX >= oY) {
+                if (vY > 0) {
+                    colDir = "t";
+                    shapeA.y += oY;
+                } else {
+                    colDir = "b";
+                    shapeA.y -= oY;
+                }
+            } else {
+                if (vX > 0) {
+                    colDir = "l";
+                    shapeA.x += oX;
+                } else {
+                    colDir = "r";
+                    shapeA.x -= oX;
+                }
+            }
+        }
+        return colDir;
+    }
+
+    intersects(circle) {
+        // Simple circle/rect intersection for springs/rings
+        let distX = Math.abs((circle.x) - (this.x + this.w / 2));
+        let distY = Math.abs((circle.y) - (this.y + this.h / 2));
+
+        if (distX > (this.w / 2 + circle.r)) return false;
+        if (distY > (this.h / 2 + circle.r)) return false;
+
+        if (distX <= (this.w / 2)) return true;
+        if (distY <= (this.h / 2)) return true;
+
+        let dx = distX - this.w / 2;
+        let dy = distY - this.h / 2;
+        return (dx * dx + dy * dy <= (circle.r * circle.r));
+    }
+
+    dist(x1, y1, x2, y2) {
+        return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+    }
+
+    respawn() {
+        this.x = 100;
+        this.y = 300;
+        this.vx = 0;
+        this.vy = 0;
+        rings = 0;
+        ringUi.innerText = "0 (Lost!)";
+        setTimeout(() => ringUi.innerText = "0", 1000);
+        // Reset uncollected rings? For now, no.
+    }
 }
 
-// Example run:
-const nums = [2, 7, 11, 15];
-const target = 9;
+// Level Generation
+const level = {
+    platforms: [],
+    springs: [],
+    rings: []
+};
 
-console.log("nums:", nums);
-console.log("target:", target);
-console.log("twoSum Output:", twoSum(nums, target));
+function initLevel() {
+    // Ground
+    level.platforms.push({ x: -100, y: 500, w: 2000, h: 400 }); // Main floor
+    level.platforms.push({ x: 2200, y: 500, w: 1000, h: 400 }); // Gap jump
+    level.platforms.push({ x: 3400, y: 400, w: 2000, h: 500 }); // Raised floor
+
+    // Platforms
+    level.platforms.push({ x: 600, y: 350, w: 200, h: 40 });
+    level.platforms.push({ x: 900, y: 250, w: 200, h: 40 });
+    level.platforms.push({ x: 1300, y: 150, w: 400, h: 40 }); // High platform
+
+    // Walls/Steps
+    level.platforms.push({ x: 1900, y: 300, w: 100, h: 200 }); 
+
+    // Springs
+    level.springs.push({ x: 1800, y: 485, r: 15, power: 22 });
+    level.springs.push({ x: 3300, y: 600, r: 15, power: 25 }); // Pit recovery
+
+    // Rings
+    for(let i=0; i<10; i++) {
+        // Lowered y from 450 to 475 (Closer to ground at 500)
+        level.rings.push({ x: 300 + (i*60), y: 475, r: 10, collected: false });
+    }
+    // Arc of rings
+    for(let i=0; i<5; i++) {
+        // Lowered y from 400 to 420
+        level.rings.push({ x: 1200 + (i*40), y: 420 - (i*30), r: 10, collected: false });
+    }
+    // High platform rings lowered from 100 to 130 (Closer to platform at 150)
+    level.rings.push({ x: 1400, y: 130, r: 10, collected: false });
+    level.rings.push({ x: 1450, y: 130, r: 10, collected: false });
+    level.rings.push({ x: 1500, y: 130, r: 10, collected: false });
+}
+
+// Game Loop & Drawing
+const player = new Player(100, 300);
+
+function resize() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+}
+
+window.addEventListener('resize', resize);
+resize();
+
+function drawLevel(camX, camY) {
+    // Draw Sky/Background
+    // Parallax Clouds
+    ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+    for (let i = 0; i < 20; i++) {
+        let cx = ((i * 300) - (camX * 0.5)) % (width + 400);
+        if (cx < -200) cx += width + 400;
+        let cy = 100 + (i * 20) % 200;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 40, 0, Math.PI * 2);
+        ctx.arc(cx + 30, cy + 10, 50, 0, Math.PI * 2);
+        ctx.arc(cx + 70, cy, 40, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    ctx.save();
+    ctx.translate(-camX, -camY);
+
+    // Draw Platforms (Checkerboard style)
+    for (let p of level.platforms) {
+        // Main block color
+        ctx.fillStyle = sprites.dirt.color;
+        ctx.fillRect(p.x, p.y, p.w, p.h);
+        
+        // Grass Top
+        ctx.fillStyle = sprites.grass.color;
+        ctx.fillRect(p.x, p.y, p.w, 20);
+        ctx.fillStyle = sprites.grass.top;
+        ctx.fillRect(p.x, p.y, p.w, 5);
+
+        // Grid Pattern detail
+        ctx.strokeStyle = "rgba(0,0,0,0.1)";
+        ctx.beginPath();
+        for(let gx = p.x; gx < p.x + p.w; gx+=40) {
+            ctx.moveTo(gx, p.y + 20);
+            ctx.lineTo(gx, p.y + p.h);
+        }
+        for(let gy = p.y + 20; gy < p.y + p.h; gy+=40) {
+            ctx.moveTo(p.x, gy);
+            ctx.lineTo(p.x + p.w, gy);
+        }
+        ctx.stroke();
+    }
+
+    // Draw Springs
+    for (let s of level.springs) {
+        ctx.fillStyle = '#B71C1C'; // Base
+        ctx.fillRect(s.x - 15, s.y + 5, 30, 10);
+        ctx.fillStyle = sprites.spring.color; // Bouncer
+        ctx.beginPath();
+        ctx.rect(s.x - 15, s.y - 5, 30, 10);
+        ctx.fill();
+        ctx.strokeStyle = 'black';
+        ctx.stroke();
+    }
+
+    // Draw Rings
+    for (let r of level.rings) {
+        if (r.collected) continue;
+        
+        // Ring Spin Animation
+        let animWidth = Math.abs(Math.sin(frameCount / 10) * r.r);
+        
+        ctx.strokeStyle = sprites.ring.color;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.ellipse(r.x, r.y, animWidth, r.r, 0, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Shine
+        if (Math.floor(frameCount / 5) % 4 === 0) {
+             ctx.fillStyle = 'white';
+             ctx.beginPath();
+             ctx.arc(r.x - animWidth/2, r.y - r.r/2, 2, 0, Math.PI*2);
+             ctx.fill();
+        }
+    }
+
+    ctx.restore();
+}
+
+function updateCamera() {
+    // Camera smoothly follows player
+    // Target position: player center minus screen center
+    let targetX = player.x + player.w/2 - width/2;
+    let targetY = player.y + player.h/2 - height/2;
+
+    // Smooth lerp
+    camera.x += (targetX - camera.x) * 0.1;
+    camera.y += (targetY - camera.y) * 0.1;
+
+    // Floor clamping (optional, keeps camera from going too low)
+    if (camera.y > 200) camera.y = 200;
+}
+
+function loop() {
+    frameCount++;
+    
+    // Logic
+    player.update();
+    updateCamera();
+
+    // Render
+    ctx.clearRect(0, 0, width, height);
+    drawLevel(Math.floor(camera.x), Math.floor(camera.y));
+    player.draw();
+
+    requestAnimationFrame(loop);
+}
+
+// Input Handlers
+window.addEventListener('keydown', e => {
+    if (keys.hasOwnProperty(e.code)) keys[e.code] = true;
+});
+
+window.addEventListener('keyup', e => {
+    if (keys.hasOwnProperty(e.code)) keys[e.code] = false;
+});
+
+// Initialization
+initLevel();
+loop();
+
 </script>
-
 </body>
 </html>
