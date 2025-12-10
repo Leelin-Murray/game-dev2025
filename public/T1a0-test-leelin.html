@@ -1,34 +1,91 @@
 <h1 style="text-align:center;">T1a0-test-leelin.html</h1>
 
-<textarea id="inputText" rows="4" cols="70">
-The Arcana Is The Means By Which All Is Revealed
-</textarea><br><br>
+<h1 align=center>t2a28-spy-leelin.html</h1>
+<textarea id="myArea01" rows=4 cols=70>The Arcana Is The Means By Which All Is Revealed</textarea><br> 
 
-<input type="button" value="encrypt / decrypt" onclick="runCipher()"><br><br>
+<input type=button value="encrypt" onclick="{
+   let myTemp = ''
+   myString = document.getElementById('myArea01').value.toLowerCase().split('')
+   for (let myLoop=0;   myLoop < myString.length; myLoop++){
+      myTemp = myString[myLoop]
+      if (myString[myLoop] == 'e') {myTemp  = 'f'} 
+      if (myString[myLoop] == 'h') {myTemp  = 'i'} 
+      if (myString[myLoop] == 'f') {myTemp  = 'e'} 
+      if (myString[myLoop] == 'i') {myTemp  = 'h'} 
+      if (myString[myLoop] == 'l') {myTemp  = 'n'} 
+      if (myString[myLoop] == 'n') {myTemp  = 'l'}
+      if (myString[myLoop] == 'p') {myTemp  = 'j'}
+      if (myString[myLoop] == 'j') {myTemp  = 'p'}
+      if (myString[myLoop] == 'r') {myTemp  = 'k'}
+      if (myString[myLoop] == 'b') {myTemp  = 'q'}
+      if (myString[myLoop] == 'q') {myTemp  = 'b'}
+      if (myString[myLoop] == 'a') {myTemp  = 'x'}
+      if (myString[myLoop] == 'x') {myTemp  = 'a'}
+      if (myString[myLoop] == 'd') {myTemp  = 'g'}
+      if (myString[myLoop] == 'g') {myTemp  = 'd'}
+      if (myString[myLoop] == 'z') {myTemp  = 'v'}
+      if (myString[myLoop] == 'v') {myTemp  = 'z'}
+      if (myString[myLoop] == 's') {myTemp  = 'o'}
+      if (myString[myLoop] == 'o') {myTemp  = 's'}
+      if (myString[myLoop] == 'c') {myTemp  = 'u'}
+      if (myString[myLoop] == 'u') {myTemp  = 'c'}
+      if (myString[myLoop] == 'w') {myTemp  = 'm'}
+      if (myString[myLoop] == 'm') {myTemp  = 'w'}
+      if (myString[myLoop] == 't') {myTemp  = 'y'}
+      if (myString[myLoop] == 'y') {myTemp  = 't'}
+      if (myString[myLoop] == '') {myTemp  = ''}
+      myString[myLoop] = myTemp
+   }
+   document.getElementById('myArea02').value = myString.join('')
+}"><br><br>
 
-<textarea id="outputText" rows="4" cols="70"></textarea><br><br>
+<textarea id="myArea02" rows=4 cols=70></textarea><br> 
 
-<script>
-// Symmetric letter swaps (same mapping for encryption & decryption)
-const cipherMap = {
-  e: 'f', f: 'e',
-  h: 'i', i: 'h',
-  l: 'n', n: 'l',
-  p: 'j', j: 'p',
-  r: 'k', k: 'r',
-  b: 'q', q: 'b',
-  a: 'x', x: 'a',
-  d: 'g', g: 'd',
-  z: 'v', v: 'z',
-  s: 'o', o: 's',
-  c: 'u', u: 'c',
-  w: 'm', m: 'w',
-  t: 'y', y: 't'
-};
+<!-- UPDATED: working decrypt -->
+<input type=button value="decrypt" onclick="{
+   let text = document.getElementById('myArea02').value.toLowerCase().split('')
+   let newText = ''
 
-function runCipher() {
-  let text = document.getElementById('inputText').value.toLowerCase();
-  let result = text.split('').map(ch => cipherMap[ch] || ch).join('');
-  document.getElementById('outputText').value = result;
-}
-</script>
+   for (let i=0; i < text.length; i++){
+      let c = text[i]
+
+      if (c=='f') c='e'
+      else if (c=='i') c='h'
+      else if (c=='e') c='f'
+      else if (c=='h') c='i'
+      else if (c=='n') c='l'
+      else if (c=='l') c='n'
+      else if (c=='j') c='p'
+      else if (c=='p') c='j'
+      else if (c=='k') c='r'
+      else if (c=='q') c='b'
+      else if (c=='b') c='q'
+      else if (c=='x') c='a'
+      else if (c=='a') c='x'
+      else if (c=='g') c='d'
+      else if (c=='d') c='g'
+      else if (c=='v') c='z'
+      else if (c=='z') c='v'
+      else if (c=='o') c='s'
+      else if (c=='s') c='o'
+      else if (c=='u') c='c'
+      else if (c=='c') c='u'
+      else if (c=='m') c='w'
+      else if (c=='w') c='m'
+      else if (c=='y') c='t'
+      else if (c=='t') c='y'
+
+      newText += c
+   }
+
+   document.getElementById('myArea03').value = newText
+}"><br><br>
+
+<textarea id="myArea03" rows=4 cols=70></textarea><br>
+
+<!-- EXTRA BUTTON: Clear All -->
+<input type=button value="clear all" onclick="{
+   document.getElementById('myArea01').value=''
+   document.getElementById('myArea02').value=''
+   document.getElementById('myArea03').value=''
+}">
