@@ -1,112 +1,34 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>T1a0-test-leelin.html</title>
+<h1 style="text-align:center;">T1a0-test-leelin.html</h1>
 
-  <style>
-    body {
-      background-color: rgb(255, 230, 150);
-      color: darkslateblue;
-      font-family: Arial, sans-serif;
-      transition: all 0.4s ease;
-    }
+<textarea id="inputText" rows="4" cols="70">
+The Arcana Is The Means By Which All Is Revealed
+</textarea><br><br>
 
-    h1 {
-      color: crimson;
-      text-align: center;
-      border-bottom: 3px solid black;
-      padding-bottom: 5px;
-    }
+<input type="button" value="encrypt / decrypt" onclick="runCipher()"><br><br>
 
-    pre {
-      background: #fff;
-      padding: 10px;
-      border-radius: 5px;
-      overflow-x: auto;
-    }
-  </style>
-</head>
-
-<body>
-
-<h1>t2a20-leet-YourName.html</h1>
-
-<p><strong>Prompt:</strong> Give me a beginner LeetCode question for me to solve.</p>
-
-<p><strong>Question:</strong>  
-Create a function that takes an array of integers <code>nums</code> and returns how many numbers in the array are **even**.
-</p>
-
-<br>
-
-<h2>My Answer</h2>
-
-<pre><code>
-function countEvens(nums) {
-  let count = 0;
-
-  for (let i = 0; i &lt; nums.length; i++) {
-    if (nums[i] % 2 === 0) {
-      count++;
-    }
-  }
-
-  return count;
-}
-</code></pre>
-
-<br>
-
-<h2>ChatGPT Answer</h2>
-
-<pre><code>
-function countEvens(nums) {
-  return nums.filter(n => n % 2 === 0).length;
-}
-</code></pre>
-
-<br>
-
-<h2>Tester</h2>
-
-<p>Enter a list of comma-separated numbers:</p>
-
-<input id="numInput" type="text" value="2, 5, 8, 11, 14, 3">
-
-<br><br>
-
-<button id="numSubmit">Submit</button>
-
-<br><br>
-
-<div id="resultDiv">Result appears here...</div>
-
+<textarea id="outputText" rows="4" cols="70"></textarea><br><br>
 
 <script>
-let submitBtn = document.getElementById("numSubmit");
-let resultDiv = document.getElementById("resultDiv");
+// Symmetric letter swaps (same mapping for encryption & decryption)
+const cipherMap = {
+  e: 'f', f: 'e',
+  h: 'i', i: 'h',
+  l: 'n', n: 'l',
+  p: 'j', j: 'p',
+  r: 'k', k: 'r',
+  b: 'q', q: 'b',
+  a: 'x', x: 'a',
+  d: 'g', g: 'd',
+  z: 'v', v: 'z',
+  s: 'o', o: 's',
+  c: 'u', u: 'c',
+  w: 'm', m: 'w',
+  t: 'y', y: 't'
+};
 
-function countEvens(nums) {
-  let count = 0;
-
-  for (let i = 0; i < nums.length; i++) {
-    if (nums[i] % 2 === 0) {
-      count++;
-    }
-  }
-
-  return count;
+function runCipher() {
+  let text = document.getElementById('inputText').value.toLowerCase();
+  let result = text.split('').map(ch => cipherMap[ch] || ch).join('');
+  document.getElementById('outputText').value = result;
 }
-
-submitBtn.addEventListener("click", function () {
-  let raw = document.getElementById("numInput").value;
-  let array = raw.split(",").map(Number);
-
-  const result = countEvens(array);
-
-  resultDiv.textContent = "Number of even values = " + result;
-});
 </script>
-
-</body>
-</html>
