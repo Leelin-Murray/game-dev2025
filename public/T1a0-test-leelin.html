@@ -28,3 +28,42 @@ placeholder="Logs / debug output will appear here…"></textarea>
 
 <script>
 // 🔐 JAZZY LETTER SWAP TABLE
+const cipherMap = {
+    e:'f', f:'e',
+    h:'i', i:'h',
+    l:'n', n:'l',
+    p:'j', j:'p',
+    r:'k',
+    b:'q', q:'b',
+    a:'x', x:'a',
+    d:'g', g:'d',
+    z:'v', v:'z',
+    s:'o', o:'s',
+    c:'u', u:'c',
+    w:'m', m:'w',
+    t:'y', y:'t'
+};
+
+// Because encryption = decryption with this cipher,
+// we can use the same function for both.
+function transform(text) {
+    let output = "";
+    for (let char of text.toLowerCase()) {
+        output += cipherMap[char] || char;  // leave unchanged if not in map
+    }
+    return output;
+}
+
+function encrypt() {
+    const input = document.getElementById("myArea01").value;
+    const encrypted = transform(input);
+    document.getElementById("myArea02").value = encrypted;
+    document.getElementById("myArea03").value = "Encrypted successfully!";
+}
+
+function decrypt() {
+    const input = document.getElementById("myArea02").value;
+    const decrypted = transform(input);
+    document.getElementById("myArea03").value = decrypted;
+}
+</script>
