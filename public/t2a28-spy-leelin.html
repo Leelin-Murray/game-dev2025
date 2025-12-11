@@ -1,51 +1,69 @@
+<h1 align="center" style="font-family: 'Trebuchet MS'; color:#6e00ff;">
+    t2a28-spy-leelin.html 🎷✨
+</h1>
 
-<h1 align=center>t2a28-spy-leelin.html</h1>
-<textarea id="myArea01" rows=4 cols=70>The Arcana Is The Means By Which All Is Revealed</textarea><br> 
+<textarea id="myArea01" rows="4" cols="70"
+style="padding:10px; border:2px solid #6e00ff; border-radius:6px; font-size:16px;">
+The Arcana Is The Means By Which All Is Revealed
+</textarea><br><br>
 
+<button onclick="encrypt()" style="padding:10px 20px; background:#6e00ff; color:white;
+border:none; border-radius:6px; cursor:pointer; font-size:16px;">
+    Encrypt ✨
+</button>
 
-<input type=button value="encrypt" onclick="{
-   let myTemp = ''
-   myString = document.getElementById('myArea01').value.toLowerCase().split('')
-   for (let myLoop=0;   myLoop < myString.length; myLoop++){
-      myTemp = myString[myLoop]
-      if (myString[myLoop] == 'e') {myTemp  = 'f'} 
-      if (myString[myLoop] == 'h') {myTemp  = 'i'} 
-      if (myString[myLoop] == 'f') {myTemp  = 'e'} 
-      if (myString[myLoop] == 'i') {myTemp  = 'h'} 
-      if (myString[myLoop] == 'l') {myTemp  = 'n'} 
-      if (myString[myLoop] == 'n') {myTemp  = 'l'}
-      if (myString[myLoop] == 'p') {myTemp  = 'j'}
-      if (myString[myLoop] == 'j') {myTemp  = 'p'}
-      if (myString[myLoop] == 'r') {myTemp  = 'k'}
-      if (myString[myLoop] == 'b') {myTemp  = 'q'}
-      if (myString[myLoop] == 'q') {myTemp  = 'b'}
-      if (myString[myLoop] == 'a') {myTemp  = 'x'}
-      if (myString[myLoop] == 'x') {myTemp  = 'a'}
-      if (myString[myLoop] == 'd') {myTemp  = 'g'}
-      if (myString[myLoop] == 'g') {myTemp  = 'd'}
-      if (myString[myLoop] == 'z') {myTemp  = 'v'}
-      if (myString[myLoop] == 'v') {myTemp  = 'z'}
-      if (myString[myLoop] == 's') {myTemp  = 'o'}
-      if (myString[myLoop] == 'o') {myTemp  = 's'}
-      if (myString[myLoop] == 'c') {myTemp  = 'u'}
-      if (myString[myLoop] == 'u') {myTemp  = 'c'}
-      if (myString[myLoop] == 'w') {myTemp  = 'm'}
-      if (myString[myLoop] == 'm') {myTemp  = 'w'}
-      if (myString[myLoop] == 't') {myTemp  = 'y'}
-      if (myString[myLoop] == 'y') {myTemp  = 't'}
-      if (myString[myLoop] == '') {myTemp  = ''}
-      myString[myLoop] = myTemp
-   }
-   document.getElementById('myArea02').value = myString.join('')
-}"><br><br>
+<button onclick="decrypt()" style="padding:10px 20px; background:#ff0080; color:white;
+border:none; border-radius:6px; cursor:pointer; font-size:16px;">
+    Decrypt 🎷
+</button>
 
+<br><br>
 
+<textarea id="myArea02" rows="4" cols="70"
+style="padding:10px; border:2px solid #ff0080; border-radius:6px; font-size:16px;"></textarea><br><br>
 
-<textarea id="myArea02" rows=4 cols=70></textarea><br> 
+<textarea id="myArea03" rows="4" cols="70"
+style="padding:10px; border:2px dashed #00c4ff; border-radius:6px; font-size:16px;"
+placeholder="Logs / debug output will appear here…"></textarea>
 
-<input type=button value="decrypt" onclick="{
-   alert('Sorry, you have to do this!')
-}"><br><br>
+<script>
+// 🔐 JAZZY LETTER SWAP TABLE
+const cipherMap = {
+    e:'f', f:'e',
+    h:'i', i:'h',
+    l:'n', n:'l',
+    p:'j', j:'p',
+    r:'k', k:'r',
+    b:'q', q:'b',
+    a:'x', x:'a',
+    d:'g', g:'d',
+    z:'v', v:'z',
+    s:'o', o:'s',
+    c:'u', u:'c',
+    w:'m', m:'w',
+    t:'y', y:'t'
+};
 
+// Because encryption = decryption with this cipher,
+// we can use the same function for both.
+function transform(text) {
+    let output = "";
+    for (let char of text.toLowerCase()) {
+        output += cipherMap[char] || char;  // leave unchanged if not in map
+    }
+    return output;
+}
 
-<textarea id="myArea03" rows=4 cols=70></textarea><br> 
+function encrypt() {
+    const input = document.getElementById("myArea01").value;
+    const encrypted = transform(input);
+    document.getElementById("myArea02").value = encrypted;
+    document.getElementById("myArea03").value = "Encrypted successfully!";
+}
+
+function decrypt() {
+    const input = document.getElementById("myArea02").value;
+    const decrypted = transform(input);
+    document.getElementById("myArea03").value = decrypted;
+}
+</script>
