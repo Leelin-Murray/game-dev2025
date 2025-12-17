@@ -1,26 +1,221 @@
 <h1 align=center>t2a20-manipulation-leelin.html</h1>
 
-String, Array, Object manipulation methods<br>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manipulation</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles to ensure the font loads well */
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s;
+        }
+        /* Custom button styling for a bit more pop */
+        .action-button {
+            @apply bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-blue-700 transition duration-150 ease-in-out w-full;
+        }
+    </style>
+    <script>
+        // Global variables for context
+        const sampleObject = {
+            first: 10,
+            second: 'Hello',
+            third: true,
+            arrayKey: [1, 2, 3]
+        };
 
-<input id="myNum01" type=text value="This is a string" ><br> 
-<span id="mySpan01">...</span><br>
+        const sampleArray = [1, 2, 3, 4, 5, 6, 7];
 
-<input type=button value=".toUpperCase()" onclick="{
-    let myIn = document.getElementById('myNum01').value
-    document.getElementById('mySpan01').innerHTML = myIn.toUpperCase()
-}"><br>
+        /**
+         * Safely determines the type of the result and updates the output area.
+         * @param {any} result - The result of the manipulation.
+         * @param {string} operationName - The name of the operation performed.
+         */
+        function updateOutput(result, operationName) {
+            const outputSpan = document.getElementById('outputResult');
+            const typeSpan = document.getElementById('outputType');
 
-<input type=button value=".split() makes and array" onclick="{
-    let myIn = document.getElementById('myNum01').value
-    document.getElementById('mySpan01').innerHTML = myIn.split('')
-}"><br>
+            let resultString;
+            let resultType = Array.isArray(result) ? 'Array' : (typeof result).charAt(0).toUpperCase() + (typeof result).slice(1);
 
-<input type=button value="Object.keys() returns array" onclick="{
-    let myObject = {
-        first: 10,
-        second: 'Hello',
-        third: true
-    }
-    let keyArray = Object.keys(myObject)
-    document.getElementById('mySpan01').innerHTML = keyArray
-}"><br>
+            // Handle complex types for display
+            if (resultType === 'Object' || resultType === 'Array') {
+                resultString = JSON.stringify(result, null, 2);
+                // Prettify the output display area for JSON
+                outputSpan.classList.add('whitespace-pre-wrap', 'font-mono', 'text-sm');
+            } else {
+                resultString = result;
+                outputSpan.classList.remove('whitespace-pre-wrap', 'font-mono', 'text-sm');
+            }
+
+            // Set the result and type
+            outputSpan.textContent = resultString;
+            typeSpan.textContent = resultType;
+
+            // Update the title
+            document.getElementById('operationTitle').textContent = operationName;
+        }
+
+        /* --- STRING MANIPULATION FUNCTIONS --- */
+
+        function toUpperCase() {
+            const myIn = document.getElementById('stringInput').value;
+            const result = myIn.toUpperCase();
+            updateOutput(result, 'String.toUpperCase()');
+        }
+
+        function stringSplit() {
+            const myIn = document.getElementById('stringInput').value;
+            // Split into an array of characters
+            const result = myIn.split('');
+            updateOutput(result, 'String.split(\'\')');
+        }
+        
+        function stringSlice() {
+            const myIn = document.getElementById('stringInput').value;
+            // Slice the first 10 characters
+            const result = myIn.slice(0, 10);
+            updateOutput(result, 'String.slice(0, 10)');
+        }
+
+        /* --- ARRAY MANIPULATION FUNCTIONS --- */
+
+        function arrayMap() {
+            // map() executes a function on every item and returns a new array
+            const result = sampleArray.map(n => n * 2);
+            updateOutput(result, 'Array.map(n => n * 2)');
+        }
+
+        function arrayFilter() {
+            // filter() returns a new array containing only items that pass a test
+            const result = sampleArray.filter(n => n % 2 === 0);
+            updateOutput(result, 'Array.filter(n => n % 2 === 0)');
+        }
+
+        function arrayReduce() {
+            // reduce() applies a function against an accumulator and each element
+            const result = sampleArray.reduce((acc, curr) => acc + curr, 0);
+            updateOutput(result, 'Array.reduce(sum)');
+        }
+
+
+        /* --- OBJECT MANIPULATION FUNCTIONS --- */
+
+        function getObjectKeys() {
+            const keyArray = Object.keys(sampleObject);
+            updateOutput(keyArray, 'Object.keys()');
+        }
+
+        function getObjectValues() {
+            const valueArray = Object.values(sampleObject);
+            updateOutput(valueArray, 'Object.values()');
+        }
+
+        function getObjectEntries() {
+            // Returns an array of [key, value] pairs
+            const entryArray = Object.entries(sampleObject);
+            updateOutput(entryArray, 'Object.entries()');
+        }
+
+        // Initialize the app state
+        window.onload = () => {
+             // Display initial object/array data in the helper spans
+             document.getElementById('currentObject').textContent = JSON.stringify(sampleObject);
+             document.getElementById('currentArray').textContent = JSON.stringify(sampleArray);
+             // Set default input text
+             document.getElementById('stringInput').value = "It was never about honor... I just gotta do whatbvi gotta do!";
+             // Run a default operation
+             toUpperCase();
+        };
+
+    </script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <!-- Main Application Card -->
+    <div class="w-full max-w-4xl bg-white p-8 rounded-xl shadow-2xl border border-gray-200">
+        
+        <!-- Header -->
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-2">
+            JS Data Manipulation Methods
+        </h1>
+        <p class="text-center text-gray-500 mb-8">
+            Explore fundamental String, Array, and Object manipulation in JavaScript.
+        </p>
+
+        <!-- Context & Input Area -->
+        <div class="mb-8 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+            <h2 class="text-xl font-semibold text-yellow-800 mb-3">
+                Input Data Context
+            </h2>
+            <label for="stringInput" class="block text-sm font-medium text-gray-700 mb-1">
+                Current String:
+            </label>
+            <input id="stringInput" type="text" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 mb-4" value="This is a string">
+
+            <p class="text-sm text-gray-600 mb-1">
+                <span class="font-bold">Sample Array:</span> 
+                <span id="currentArray" class="font-mono bg-gray-200 p-1 rounded"></span>
+            </p>
+             <p class="text-sm text-gray-600">
+                <span class="font-bold">Sample Object:</span> 
+                <span id="currentObject" class="font-mono bg-gray-200 p-1 rounded"></span>
+            </p>
+        </div>
+
+        <!-- Methods Section (Grid Layout) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            
+            <!-- String Methods -->
+            <div class="p-4 bg-green-50 rounded-xl shadow-lg border border-green-200">
+                <h3 class="text-lg font-bold text-green-700 mb-3">String Methods</h3>
+                <div class="space-y-3">
+                    <button class="action-button bg-green-600 hover:bg-green-700" onclick="toUpperCase()">.toUpperCase()</button>
+                    <button class="action-button bg-green-600 hover:bg-green-700" onclick="stringSplit()">.split('') (Array Output)</button>
+                    <button class="action-button bg-green-600 hover:bg-green-700" onclick="stringSlice()">.slice(0, 10)</button>
+                </div>
+            </div>
+
+            <!-- Array Methods -->
+            <div class="p-4 bg-purple-50 rounded-xl shadow-lg border border-purple-200">
+                <h3 class="text-lg font-bold text-purple-700 mb-3">Array Methods</h3>
+                <div class="space-y-3">
+                    <button class="action-button bg-purple-600 hover:bg-purple-700" onclick="arrayMap()">.map() (Multiply by 2)</button>
+                    <button class="action-button bg-purple-600 hover:bg-purple-700" onclick="arrayFilter()">.filter() (Even Numbers)</button>
+                    <button class="action-button bg-purple-600 hover:bg-purple-700" onclick="arrayReduce()">.reduce() (Sum)</button>
+                </div>
+            </div>
+
+            <!-- Object Methods -->
+            <div class="p-4 bg-red-50 rounded-xl shadow-lg border border-red-200">
+                <h3 class="text-lg font-bold text-red-700 mb-3">Object Methods</h3>
+                <div class="space-y-3">
+                    <button class="action-button bg-red-600 hover:bg-red-700" onclick="getObjectKeys()">Object.keys() (Array Output)</button>
+                    <button class="action-button bg-red-600 hover:bg-red-700" onclick="getObjectValues()">Object.values()</button>
+                    <button class="action-button bg-red-600 hover:bg-red-700" onclick="getObjectEntries()">Object.entries()</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Output Result Area -->
+        <div class="bg-gray-800 text-white p-6 rounded-xl shadow-inner border-t-4 border-blue-500">
+            <h2 class="text-xl font-semibold mb-3">
+                <span id="operationTitle"></span> - Result
+            </h2>
+            <div class="text-sm font-light mb-4">
+                <span class="font-bold text-blue-400">Data Type:</span> 
+                <span id="outputType" class="bg-blue-600 px-2 py-1 rounded-full text-xs font-mono">...</span>
+            </div>
+            
+            <!-- Output Content Area -->
+            <pre id="outputResult" class="text-lg text-yellow-300 overflow-x-auto">...</pre>
+        </div>
+
+    </div>
+
+</body>
+</html>
