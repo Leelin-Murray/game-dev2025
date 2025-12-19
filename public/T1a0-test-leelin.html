@@ -1,124 +1,91 @@
 <h1 align="center" style="font-family: 'Trebuchet MS'; color:#6e00ff;">
 
-    <!DOCTYPE html>
+   <!DOCTYPE html>
 <html>
 <head>
 <style>
 body {
-    background: linear-gradient(#9be7ff, #eaffd0);
-    font-family: Arial, sans-serif;
+    background: #111;
+    color: white;
+    font-family: monospace;
     text-align: center;
 }
 
-#gameArea {
+#game {
     position: relative;
-    margin: auto;
-    width: 500px;
+    width: 400px;
     height: 300px;
-    border: 3px solid #333;
-    background: #f4f4f4;
-    overflow: hidden;
+    margin: auto;
+    border: 2px solid white;
+    background: black;
 }
 
 img {
     position: absolute;
 }
 
-#controls {
+#msg {
     margin-top: 10px;
-}
-
-button {
-    padding: 8px 15px;
-    font-size: 16px;
-    cursor: pointer;
+    height: 20px;
 }
 </style>
 </head>
 
 <body>
 
-<h2>Collision Game</h2>
-<p id="status">Use arrow keys to move</p>
-<p>Score: <span id="score">0</span></p>
+<h2>Simple Dodge Game</h2>
 
-<div id="gameArea">
-    <img id="myImg01"
+<div id="game">
+    <img id="player"
          src="https://plantsvszombies.wiki.gg/images/Lefootballwebsite.png?9748db"
-         style="left:10px; top:130px; width:60px; height:40px;">
+         style="left:180px; top:250px; width:40px; height:30px;">
 
-    <img id="myImg02"
+    <img id="enemy"
          src="https://p1.hiclipart.com/preview/721/682/491/color-changing-peashooter-plant-vs-zombie-illustration-png-clipart-thumbnail.jpg"
-         style="left:400px; top:130px; width:60px; height:40px;">
+         style="left:180px; top:0px; width:40px; height:30px;">
 </div>
 
-<div id="controls">
-    <button onclick="resetGame()">Reset</button>
-</div>
+<div id="msg"></div>
 
 <script>
-let score = 0;
-let enemySpeed = 2;
-
-// collision detection
-function myHitOther(id1, id2) {
-    let a = document.getElementById(id1).getBoundingClientRect();
-    let b = document.getElementById(id2).getBoundingClientRect();
-
-    return !(
-        a.right < b.left ||
-        a.left > b.right ||
-        a.bottom < b.top ||
-        a.top > b.bottom
-    );
+// collision
+function hit(a, b) {
+    let A = a.getBoundingClientRect();
+    let B = b.getBoundingClientRect();
+    return !(A.right < B.left || A.left > B.right ||
+             A.bottom < B.top || A.top > B.bottom);
 }
 
-// check collision
-function myCheckHit() {
-    if (myHitOther('myImg01', 'myImg02')) {
-        document.getElementById('status').innerText = "💥 You hit the enemy!";
-        score = 0;
-        document.getElementById('score').innerText = score;
-        resetGame();
-    }
+// reset
+function reset() {
+    enemy.style.top = "0px";
+    enemy.style.left = Math.floor(Math.random() * 360) + "px";
+    player.style.left = "180px";
 }
 
-// keyboard movement
-document.addEventListener('keydown', e => {
-    let player = document.getElementById('myImg01');
-    let left = parseInt(player.style.left);
-    let top = parseInt(player.style.top);
+// movement
+document.addEventListener("keydown", e => {
+    let x = parseInt(player.style.left);
 
-    if (e.key === "ArrowRight") player.style.left = left + 10 + "px";
-    if (e.key === "ArrowLeft")  player.style.left = left - 10 + "px";
-    if (e.key === "ArrowUp")    player.style.top  = top - 10 + "px";
-    if (e.key === "ArrowDown")  player.style.top  = top + 10 + "px";
-
-    myCheckHit();
+    if (e.key === "a" && x > 0) player.style.left = x - 10 + "px";
+    if (e.key === "d" && x < 360) player.style.left = x + 10 + "px";
 });
 
-// enemy movement loop
+// enemy falling
 setInterval(() => {
-    let enemy = document.getElementById('myImg02');
-    let left = parseInt(enemy.style.left);
+    let y = parseInt(enemy.style.top);
+    enemy.style.top = y + 4 + "px";
 
-    enemy.style.left = left - enemySpeed + "px";
-
-    if (left < 0) {
-        enemy.style.left = "450px";
-        score++;
-        document.getElementById('score').innerText = score;
+    if (hit(player, enemy)) {
+        document.getElementById("msg").innerText = "💥 You got hit!";
+        reset();
     }
 
-    myCheckHit();
+    if (y > 270) {
+        document.getElementById("msg").innerText = "Nice dodge!";
+        reset();
+    }
 }, 30);
-
-// reset game
-function resetGame() {
-    document.getElementById('myImg01').style.left = "10px";
-    document.getElementById('myImg01').style.top = "130px";
-    document.getElementById('myImg02').style.left = "450px";
-}
 </script>
 
 </body>
