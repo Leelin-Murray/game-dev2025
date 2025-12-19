@@ -1,69 +1,125 @@
 <h1 align="center" style="font-family: 'Trebuchet MS'; color:#6e00ff;">
-    t2a28-spy-leelin.html 🎷✨
-</h1>
 
-<textarea id="myArea01" rows="4" cols="70"
-style="padding:10px; border:2px solid #6e00ff; border-radius:6px; font-size:16px;">
-The Arcana Is The Means By Which All Is Revealed
-</textarea><br><br>
+    <!DOCTYPE html>
+<html>
+<head>
+<style>
+body {
+    background: linear-gradient(#9be7ff, #eaffd0);
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
 
-<button onclick="encrypt()" style="padding:10px 20px; background:#6e00ff; color:white;
-border:none; border-radius:6px; cursor:pointer; font-size:16px;">
-    Encrypt ✨
-</button>
+#gameArea {
+    position: relative;
+    margin: auto;
+    width: 500px;
+    height: 300px;
+    border: 3px solid #333;
+    background: #f4f4f4;
+    overflow: hidden;
+}
 
-<button onclick="decrypt()" style="padding:10px 20px; background:#ff0080; color:white;
-border:none; border-radius:6px; cursor:pointer; font-size:16px;">
-    Decrypt 🎷
-</button>
+img {
+    position: absolute;
+}
 
-<br><br>
+#controls {
+    margin-top: 10px;
+}
 
-<textarea id="myArea02" rows="4" cols="70"
-style="padding:10px; border:2px solid #ff0080; border-radius:6px; font-size:16px;"></textarea><br><br>
+button {
+    padding: 8px 15px;
+    font-size: 16px;
+    cursor: pointer;
+}
+</style>
+</head>
 
-<textarea id="myArea03" rows="4" cols="70"
-style="padding:10px; border:2px dashed #00c4ff; border-radius:6px; font-size:16px;"
-placeholder="Logs / debug output will appear here…"></textarea>
+<body>
+
+<h2>Collision Game</h2>
+<p id="status">Use arrow keys to move</p>
+<p>Score: <span id="score">0</span></p>
+
+<div id="gameArea">
+    <img id="myImg01"
+         src="https://plantsvszombies.wiki.gg/images/Lefootballwebsite.png?9748db"
+         style="left:10px; top:130px; width:60px; height:40px;">
+
+    <img id="myImg02"
+         src="https://p1.hiclipart.com/preview/721/682/491/color-changing-peashooter-plant-vs-zombie-illustration-png-clipart-thumbnail.jpg"
+         style="left:400px; top:130px; width:60px; height:40px;">
+</div>
+
+<div id="controls">
+    <button onclick="resetGame()">Reset</button>
+</div>
 
 <script>
-// 🔐 JAZZY LETTER SWAP TABLE
-const cipherMap = {
-    e:'f', f:'e',
-    h:'i', i:'h',
-    l:'n', n:'l',
-    p:'j', j:'p',
-    r:'k', k:'r',
-    b:'q', q:'b',
-    a:'x', x:'a',
-    d:'g', g:'d',
-    z:'v', v:'z',
-    s:'o', o:'s',
-    c:'u', u:'c',
-    w:'m', m:'w',
-    t:'y', y:'t'
-};
+let score = 0;
+let enemySpeed = 2;
 
-// Because encryption = decryption with this cipher,
-// we can use the same function for both.
-function transform(text) {
-    let output = "";
-    for (let char of text.toLowerCase()) {
-        output += cipherMap[char] || char;  // leave unchanged if not in map
+// collision detection
+function myHitOther(id1, id2) {
+    let a = document.getElementById(id1).getBoundingClientRect();
+    let b = document.getElementById(id2).getBoundingClientRect();
+
+    return !(
+        a.right < b.left ||
+        a.left > b.right ||
+        a.bottom < b.top ||
+        a.top > b.bottom
+    );
+}
+
+// check collision
+function myCheckHit() {
+    if (myHitOther('myImg01', 'myImg02')) {
+        document.getElementById('status').innerText = "💥 You hit the enemy!";
+        score = 0;
+        document.getElementById('score').innerText = score;
+        resetGame();
     }
-    return output;
 }
 
-function encrypt() {
-    const input = document.getElementById("myArea01").value;
-    const encrypted = transform(input);
-    document.getElementById("myArea02").value = encrypted;
-    document.getElementById("myArea03").value = "Encrypted successfully!";
-}
+// keyboard movement
+document.addEventListener('keydown', e => {
+    let player = document.getElementById('myImg01');
+    let left = parseInt(player.style.left);
+    let top = parseInt(player.style.top);
 
-function decrypt() {
-    const input = document.getElementById("myArea02").value;
-    const decrypted = transform(input);
-    document.getElementById("myArea03").value = decrypted;
+    if (e.key === "ArrowRight") player.style.left = left + 10 + "px";
+    if (e.key === "ArrowLeft")  player.style.left = left - 10 + "px";
+    if (e.key === "ArrowUp")    player.style.top  = top - 10 + "px";
+    if (e.key === "ArrowDown")  player.style.top  = top + 10 + "px";
+
+    myCheckHit();
+});
+
+// enemy movement loop
+setInterval(() => {
+    let enemy = document.getElementById('myImg02');
+    let left = parseInt(enemy.style.left);
+
+    enemy.style.left = left - enemySpeed + "px";
+
+    if (left < 0) {
+        enemy.style.left = "450px";
+        score++;
+        document.getElementById('score').innerText = score;
+    }
+
+    myCheckHit();
+}, 30);
+
+// reset game
+function resetGame() {
+    document.getElementById('myImg01').style.left = "10px";
+    document.getElementById('myImg01').style.top = "130px";
+    document.getElementById('myImg02').style.left = "450px";
 }
 </script>
+
+</body>
+</html>
