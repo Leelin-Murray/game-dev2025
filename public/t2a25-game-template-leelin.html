@@ -11,7 +11,7 @@
    let onGround = false
    let myClock
 
-   // COLLISION FUNCTION (yours, unchanged)
+   // COLLISION FUNCTION
    function myHitOther(my1,my2){
       let left1   = parseInt(document.getElementById(my1).style.left)
       let right1  = left1 + parseInt(document.getElementById(my1).style.width)
@@ -48,7 +48,7 @@
       // ENEMY COLLISION
       if (myHitOther('player','enemy')){
          alert('You lose!')
-         location.reload()
+         window.location.href = 'https://example.com'  // <-- replace with your URL
       }
    }
 
