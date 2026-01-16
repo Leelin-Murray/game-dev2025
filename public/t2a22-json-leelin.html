@@ -1,24 +1,48 @@
- <h1 align="center">t2a22-json-leelin.html</h1>
+<h1 align="center">t2a22-json-leelin</h1>
 
-  <script>
-    async function fetchData(url){
-      const response = await fetch(url);
-      const data =  await response.json();
-      console.log(data);
+<script>
+async function fetchData(url) {
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
 
-      const myJson = JSON.stringify(data, null, 2);
-      document.getElementById('myDiv1').innerHTML = `<pre>${myJson}</pre>`;
+        console.log(data);
 
-      document.getElementById('myDiv1').innerHTML += `<img src="${data.image}" alt="Random Image" style="max-width: 100%; height: auto;">`;
-    
-   }
+        const myJson = JSON.stringify(data, null, 2);
+        document.getElementById('myDiv1').innerHTML = `<pre>${myJson}</pre>`;
 
-  </script>
+        let imageUrl = "";
 
+        if (url.includes("randomfox")) {
+            imageUrl = data.image;
+        } 
+        else if (url.includes("randomuser")) {
+            imageUrl = data.results[0].picture.large;
+        }
 
-  <select id="mySelect" size="1" onchange="fetchData(this.value)">
-    <option ></option>   
-    <option value="https://randomfox.ca/floof/">randomfox</option>
-  </select><br><br>
+        if (imageUrl) {
+            document.getElementById('myDiv1').innerHTML += `
+                <img src="${imageUrl}" 
+                     style="max-width:300px; display:block; margin-top:10px; border-radius:10px;">
+            `;
+        }
 
-  <div id="myDiv1">...</div>
+    } catch (error) {
+        document.getElementById('myDiv1').innerHTML =
+            "Error fetching data: " + error;
+    }
+}
+</script>
+
+<select id="mySelect" onchange="fetchData(this.value)">
+    <option value="">Select an API</option>
+    <option value="https://randomfox.ca/floof/">Random Fox 🦊</option>
+    <option value="https://api.adviceslip.com/advice">Random Advice 💡</option>
+    <option value="https://official-joke-api.appspot.com/random_joke">Random Joke 😂</option>
+    <option value="https://www.boredapi.com/api/activity">Random Activity 🎯</option>
+    <option value="https://randomuser.me/api/">Random User 👤</option>
+</select>
+
+<br><br>
+
+<div id="myDiv1">...</div>
