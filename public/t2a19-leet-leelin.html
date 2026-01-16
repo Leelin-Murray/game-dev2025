@@ -1,28 +1,132 @@
-<h1 align=center>t2a19-leet-leelin.html</h1>
+<!DOCTYPE html>
+<html>
+<head>
+<title>t2a19-leet-leelin.html</title>
 
-<br><br><li> Ask chatGPT for a beginner friendly javascript Leet code question.
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    color: #ffffff;
+    padding: 30px;
+}
 
-<br><br><li> Record the question on this webpage
+h1 {
+    text-align: center;
+    text-shadow: 0 0 10px black;
+}
 
-<br><br><li> Write your code to solve the problem within Pre tags
+.section {
+    background: rgba(0,0,0,0.4);
+    padding: 20px;
+    margin: 25px auto;
+    max-width: 900px;
+    border-radius: 12px;
+}
 
-<br><br><li> Ask chatGPT to make an html javascript single file answer without any css.
+h2 {
+    color: #ffd700;
+}
 
+pre {
+    background: #111;
+    color: #00ffcc;
+    padding: 15px;
+    border-radius: 8px;
+    overflow-x: auto;
+}
+</style>
+</head>
 
+<body>
 
-<ol>
-<br><br><li> Show your prompt here
+<h1>t2a19-leet-leelin.html</h1>
 
-<br><br><li> Show the Leet question here
+<div class="section">
+<h2>📌 Assignment Instructions</h2>
+<ul>
+    <li>Ask ChatGPT for a beginner friendly JavaScript LeetCode question</li>
+    <li>Record the question on this webpage</li>
+    <li>Write your own solution inside PRE tags</li>
+    <li>Ask ChatGPT to make a single-file HTML + JavaScript answer with no CSS</li>
+</ul>
+</div>
 
-<br><br><li> Within PRE tags show your version of the leet answer without looking at the actual answer. <br>
+<div class="section">
+<h2>🧠 My Prompt to ChatGPT</h2>
+<pre>
+"Give me a beginner-friendly JavaScript LeetCode-style problem
+that uses arrays and a loop, and explain it simply."
+</pre>
+</div>
+
+<div class="section">
+<h2>❓ LeetCode-Style Question</h2>
+<p>
+<b>Problem:</b><br>
+Given an array of numbers, return the sum of all the numbers in the array.
+</p>
+
+<p>
+<b>Example:</b><br>
+Input: [1, 2, 3, 4]<br>
+Output: 10
+</p>
+
+<p>
+<b>Explanation:</b><br>
+Add all the numbers together and return the total.
+</p>
+</div>
+
+<div class="section">
+<h2>✍️ My Solution (Before Looking at the Answer)</h2>
 
 <pre>
-This code is in the pre tag
-     it save spaces  and linebreaks
-              For example this is shifted in
+function sumArray(nums) {
+    let total = 0;
+
+    for (let i = 0; i < nums.length; i++) {
+        total += nums[i];
+    }
+
+    return total;
+}
+
+// Example test
+console.log(sumArray([1, 2, 3, 4]));
 </pre>
+</div>
 
-<br><br><li> Put the chatGPT working code here. (Sensibly, it does not need several tags that are not used)
+<div class="section">
+<h2>🤖 ChatGPT Working Code (Single File, No CSS)</h2>
 
-</ol>
+<pre>
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;Sum Array&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;h2&gt;Sum of Array Example&lt;/h2&gt;
+
+&lt;script&gt;
+function sumArray(nums) {
+    let sum = 0;
+    for (let num of nums) {
+        sum += num;
+    }
+    document.write("Sum: " + sum);
+}
+
+sumArray([1, 2, 3, 4]);
+&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+</pre>
+</div>
+
+</body>
+</html>
