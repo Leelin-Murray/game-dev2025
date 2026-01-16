@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>t2a18-loops-1-page-leelin</title>
+
+<style>
+body {
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    color: #ffffff;
+    font-family: Consolas, monospace;
+    padding: 30px;
+}
+
+h1 {
+    text-align: center;
+    font-size: 36px;
+    text-shadow: 0 0 20px #00ffff;
+}
+
+.loop {
+    background: rgba(0,0,0,0.5);
+    border-radius: 15px;
+    padding: 20px;
+    margin: 25px auto;
+    max-width: 800px;
+    box-shadow: 0 0 25px rgba(0,255,255,0.2);
+}
+
+.loop h2 {
+    color: #00ffd5;
+    text-shadow: 0 0 10px #00ffd5;
+}
+
+pre {
+    background: #111;
+    padding: 15px;
+    border-radius: 10px;
+    overflow-x: auto;
+    color: #a8fffb;
+}
+
+.output {
+    background: #000;
+    margin-top: 10px;
+    padding: 10px;
+    border-left: 4px solid #00ffd5;
+    white-space: pre-line;
+}
+.note {
+    color: #ffeb3b;
+    margin-top: 8px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>✨ t2a18-loops-1-page-leelin ✨</h1>
+
+<!-- FOR LOOP -->
+<div class="loop">
+<h2>🔁 for loop</h2>
+<pre>
+for (let i = 0; i < 3; i++) {
+    output += 'Count: ' + i;
+}
+</pre>
+<div class="output">
+Count: 0
+Count: 1
+Count: 2
+</div>
+<div class="note">📌 Used when you know how many times to loop</div>
+</div>
+
+<!-- WHILE LOOP -->
+<div class="loop">
+<h2>🔄 while loop</h2>
+<pre>
+let i = 0;
+while (i < 3) {
+    output += 'Index: ' + i;
+    i++;
+}
+</pre>
+<div class="output">
+Index: 0
+Index: 1
+Index: 2
+</div>
+<div class="note">📌 Runs while condition is true</div>
+</div>
+
+<!-- DO WHILE -->
+<div class="loop">
+<h2>⚠️ do...while loop</h2>
+<pre>
+let i = 5;
+do {
+    output += 'Run: ' + i;
+    i++;
+} while (i < 3);
+</pre>
+<div class="output">
+Run: 5
+</div>
+<div class="note">📌 Always runs at least once</div>
+</div>
+
+<!-- FOR IN -->
+<div class="loop">
+<h2>🗂 for...in loop (objects)</h2>
+<pre>
+const user = { name: 'Alice', age: 30 };
+for (const key in user) {
+    output += key + ': ' + user[key];
+}
+</pre>
+<div class="output">
+name: Alice
+age: 30
+</div>
+<div class="note">📌 Loops through object properties</div>
+</div>
+
+<!-- FOR OF -->
+<div class="loop">
+<h2>🍎 for...of loop (arrays)</h2>
+<pre>
+const fruits = ['Apple', 'Banana'];
+for (const fruit of fruits) {
+    output += fruit;
+}
+</pre>
+<div class="output">
+Apple
+Banana
+</div>
+<div class="note">📌 Loops through values directly</div>
+</div>
+
+<!-- FOREACH -->
+<div class="loop">
+<h2>🎯 forEach()</h2>
+<pre>
+numbers.forEach((num, index) => {
+    output += num + ' at ' + index;
+});
+</pre>
+<div class="output">
+10 at 0
+20 at 1
+</div>
+<div class="note">📌 Array method, cannot break out early</div>
+</div>
+
+<!-- MAP -->
+<div class="loop">
+<h2>🧠 map()</h2>
+<pre>
+const squared = nums.map(n => n * 2);
+</pre>
+<div class="output">
+[2, 4]
+</div>
+<div class="note">📌 Transforms array into a new one</div>
+</div>
+
+<!-- FILTER -->
+<div class="loop">
+<h2>🚦 filter()</h2>
+<pre>
+const adults = ages.filter(a => a >= 18);
+</pre>
+<div class="output">
+[20]
+</div>
+<div class="note">📌 Keeps values that pass a test</div>
+</div>
+
+<!-- REDUCE -->
+<div class="loop">
+<h2>➕ reduce()</h2>
+<pre>
+const sum = vals.reduce((acc, curr) => acc + curr, 0);
+</pre>
+<div class="output">
+3
+</div>
+<div class="note">📌 Combines values into one result</div>
+</div>
+
+<!-- FOR AWAIT -->
+<div class="loop">
+<h2>⏳ for await...of (advanced)</h2>
+<pre>
+async function* generator() {
+    yield 100;
+    yield 200;
+}
+
+for await (const val of generator()) {
+    output += val;
+}
+</pre>
+<div class="output">
+100
+200
+</div>
+<div class="note">📌 Used for async data (advanced)</div>
+</div>
+
+</body>
+</html>
